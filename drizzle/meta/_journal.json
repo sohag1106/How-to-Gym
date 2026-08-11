@@ -15,6 +15,13 @@
       "when": 1786427156869,
       "tag": "0001_eminent_supernaut",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786429292281,
+      "tag": "0002_lucky_anthem",
+      "breakpoints": true
     }
   ]
 }

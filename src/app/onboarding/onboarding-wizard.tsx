@@ -3,11 +3,13 @@
 import { useMemo, useState, useTransition } from "react";
 import { ChevronLeft, Minus, Plus, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { submitOnboarding, type OnboardingInput } from "./actions";
 
-const STEPS = ["experience", "goal", "days", "offDays", "split"] as const;
+const STEPS = ["experience", "stats", "goal", "days", "offDays", "split"] as const;
 type Step = (typeof STEPS)[number];
 
 const WEEKDAYS = [
@@ -65,6 +67,8 @@ export function OnboardingWizard() {
   const [offDays, setOffDays] = useState<number[]>([5, 6]);
   const [splitPreference, setSplitPreference] =
     useState<OnboardingInput["splitPreference"]>("mixed_full_body");
+  const [heightCm, setHeightCm] = useState("");
+  const [weightKg, setWeightKg] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -97,6 +101,8 @@ export function OnboardingWizard() {
         daysPerWeek,
         splitPreference,
         offDays,
+        heightCm: heightCm ? Number(heightCm) : null,
+        weightKg: weightKg ? Number(weightKg) : null,
       });
       if (res?.error) setError(res.error);
     });
@@ -131,6 +137,40 @@ export function OnboardingWizard() {
                 onClick={() => setExperienceLevel(opt.value)}
               />
             ))}
+          </StepShell>
+        )}
+
+        {step === "stats" && (
+          <StepShell
+            title="Height & weight"
+            subtitle="Optional — helps us track your progress over time. Skip if you'd rather not share."
+          >
+            <div className="grid grid-cols-2 gap-3 mt-2">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="heightCm">Height (cm)</Label>
+                <Input
+                  id="heightCm"
+                  type="number"
+                  inputMode="numeric"
+                  placeholder="175"
+                  value={heightCm}
+                  onChange={(e) => setHeightCm(e.target.value)}
+                  className="h-12 rounded-xl"
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="weightKg">Weight (kg)</Label>
+                <Input
+                  id="weightKg"
+                  type="number"
+                  inputMode="numeric"
+                  placeholder="70"
+                  value={weightKg}
+                  onChange={(e) => setWeightKg(e.target.value)}
+                  className="h-12 rounded-xl"
+                />
+              </div>
+            </div>
           </StepShell>
         )}
 

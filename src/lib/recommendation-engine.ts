@@ -31,6 +31,7 @@ const PATTERN_CATEGORY: Record<string, Category> = {
   leg_press: "legs",
   leg_curl: "legs",
   squat: "legs",
+  deadlift: "legs",
   mobility_stretch: "core",
   cardio_cycle: "cardio",
   cardio_run: "cardio",
@@ -39,6 +40,7 @@ const PATTERN_CATEGORY: Record<string, Category> = {
 /** Lower = perform earlier in the session (compound lifts before isolation/cardio). */
 const COMPOUND_PRIORITY: Record<string, number> = {
   squat: 0,
+  deadlift: 0,
   chest_press: 0,
   lat_pulldown: 0,
   pull_up: 0,

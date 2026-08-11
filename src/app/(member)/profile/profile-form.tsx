@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -22,13 +23,23 @@ export function ProfileForm({ profile }: { profile: OnboardingInput }) {
   const [daysPerWeek, setDaysPerWeek] = useState(profile.daysPerWeek);
   const [splitPreference, setSplitPreference] = useState(profile.splitPreference);
   const [offDays, setOffDays] = useState<number[]>(profile.offDays);
+  const [heightCm, setHeightCm] = useState(profile.heightCm ? String(profile.heightCm) : "");
+  const [weightKg, setWeightKg] = useState(profile.weightKg ? String(profile.weightKg) : "");
   const [saved, setSaved] = useState(false);
   const [pending, startTransition] = useTransition();
 
   function save() {
     setSaved(false);
     startTransition(async () => {
-      await updateProfile({ experienceLevel, goal, daysPerWeek, splitPreference, offDays });
+      await updateProfile({
+        experienceLevel,
+        goal,
+        daysPerWeek,
+        splitPreference,
+        offDays,
+        heightCm: heightCm ? Number(heightCm) : null,
+        weightKg: weightKg ? Number(weightKg) : null,
+      });
       setSaved(true);
     });
   }
@@ -96,6 +107,27 @@ export function ProfileForm({ profile }: { profile: OnboardingInput }) {
           ))}
         </div>
       </Field>
+
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Height (cm)">
+          <Input
+            type="number"
+            inputMode="numeric"
+            value={heightCm}
+            onChange={(e) => setHeightCm(e.target.value)}
+            className="h-11 rounded-xl"
+          />
+        </Field>
+        <Field label="Weight (kg)">
+          <Input
+            type="number"
+            inputMode="numeric"
+            value={weightKg}
+            onChange={(e) => setWeightKg(e.target.value)}
+            className="h-11 rounded-xl"
+          />
+        </Field>
+      </div>
 
       <Field label="Off days">
         <div className="grid grid-cols-4 gap-2">

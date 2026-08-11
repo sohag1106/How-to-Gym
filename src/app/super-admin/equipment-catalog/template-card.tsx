@@ -3,15 +3,27 @@
 import { useTransition } from "react";
 import { Trash2 } from "lucide-react";
 import { deleteEquipmentTemplate } from "./actions";
+import { ManageExercisesDialog } from "./manage-exercises-dialog";
+
+type Option = { id: string; name?: string; label?: string };
 
 type Template = {
   id: string;
   name: string;
   imageData: string;
   movementPattern?: { label: string } | null;
+  exercises: { id: string; name: string; movementPattern?: { label: string } | null }[];
 };
 
-export function TemplateCard({ template }: { template: Template }) {
+export function TemplateCard({
+  template,
+  groups,
+  patterns,
+}: {
+  template: Template;
+  groups: Option[];
+  patterns: Option[];
+}) {
   const [isPending, startTransition] = useTransition();
 
   return (
@@ -26,11 +38,9 @@ export function TemplateCard({ template }: { template: Template }) {
         <p className="text-sm font-medium leading-tight line-clamp-2">
           {template.name}
         </p>
-        {template.movementPattern && (
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {template.movementPattern.label}
-          </p>
-        )}
+        <p className="text-xs text-muted-foreground mt-0.5">
+          {template.exercises.length} exercise{template.exercises.length === 1 ? "" : "s"}
+        </p>
       </div>
       <button
         type="button"
@@ -42,6 +52,13 @@ export function TemplateCard({ template }: { template: Template }) {
       >
         <Trash2 className="size-3.5" />
       </button>
+      <ManageExercisesDialog
+        templateId={template.id}
+        templateName={template.name}
+        exercises={template.exercises}
+        groups={groups}
+        patterns={patterns}
+      />
     </div>
   );
 }

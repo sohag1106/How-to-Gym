@@ -4,9 +4,10 @@ import { z } from "zod";
 import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/db";
-import { equipment, equipmentTemplates, exercises, movementPatterns } from "@/db/schema";
+import { equipment, exercises, movementPatterns } from "@/db/schema";
 import { requireRole } from "@/lib/auth";
 import { defaultsForPattern } from "@/lib/exercise-defaults";
+import { addTemplateToGym } from "@/lib/gym-catalog";
 
 async function createDefaultExercise(
   equipmentId: string,
@@ -33,34 +34,8 @@ async function createDefaultExercise(
 export async function addFromTemplate(templateId: string) {
   const owner = await requireRole("gym_owner");
 
-  const existing = await db.query.equipment.findFirst({
-    where: and(
-      eq(equipment.gymId, owner.gymId!),
-      eq(equipment.templateId, templateId)
-    ),
-  });
-  if (existing) return { error: "Already in your gym" };
-
-  const [template] = await db
-    .select()
-    .from(equipmentTemplates)
-    .where(eq(equipmentTemplates.id, templateId));
-  if (!template) return { error: "Not found" };
-
-  const [created] = await db
-    .insert(equipment)
-    .values({
-      gymId: owner.gymId!,
-      templateId: template.id,
-      name: template.name,
-      imageData: template.imageData,
-      muscleGroupId: template.muscleGroupId,
-      movementPatternId: template.movementPatternId,
-      addedByUserId: owner.id,
-    })
-    .returning();
-
-  await createDefaultExercise(created.id, created.name, created.movementPatternId);
+  const created = await addTemplateToGym(owner.gymId!, templateId, owner.id);
+  if (!created) return { error: "Already in your gym, or template not found" };
 
   revalidatePath("/admin/equipment");
   return { success: true };

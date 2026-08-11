@@ -13,6 +13,8 @@ const schema = z.object({
   daysPerWeek: z.number().int().min(2).max(6),
   splitPreference: z.enum(["mixed_full_body", "upper_lower", "push_pull_legs", "bro_split"]),
   offDays: z.array(z.number().int().min(0).max(6)),
+  heightCm: z.number().int().min(100).max(250).nullable(),
+  weightKg: z.number().int().min(30).max(300).nullable(),
 });
 
 export type OnboardingInput = z.infer<typeof schema>;

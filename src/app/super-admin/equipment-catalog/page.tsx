@@ -7,7 +7,11 @@ import { TemplateCard } from "./template-card";
 export default async function EquipmentCatalogPage() {
   const [templates, groups, patterns] = await Promise.all([
     db.query.equipmentTemplates.findMany({
-      with: { muscleGroup: true, movementPattern: true },
+      with: {
+        muscleGroup: true,
+        movementPattern: true,
+        exercises: { with: { movementPattern: true } },
+      },
       orderBy: asc(equipmentTemplates.name),
     }),
     db.select().from(muscleGroups).orderBy(asc(muscleGroups.sortOrder)),
@@ -50,7 +54,7 @@ export default async function EquipmentCatalogPage() {
                 </h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                   {byGroup.get(g.name)!.map((t) => (
-                    <TemplateCard key={t.id} template={t} />
+                    <TemplateCard key={t.id} template={t} groups={groups} patterns={patterns} />
                   ))}
                 </div>
               </section>

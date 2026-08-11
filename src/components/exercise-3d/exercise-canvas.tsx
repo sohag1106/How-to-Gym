@@ -17,6 +17,7 @@ const CATEGORY_BY_PATTERN: Record<string, "arms" | "legs" | "core"> = {
   leg_press: "legs",
   leg_curl: "legs",
   squat: "legs",
+  deadlift: "legs",
   cardio_cycle: "legs",
   cardio_run: "legs",
   mobility_stretch: "core",

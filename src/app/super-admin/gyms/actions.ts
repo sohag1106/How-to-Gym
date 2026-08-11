@@ -7,6 +7,7 @@ import { clerkClient } from "@clerk/nextjs/server";
 import { db } from "@/db";
 import { gyms } from "@/db/schema";
 import { requireRole } from "@/lib/auth";
+import { populateGymFromFullCatalog } from "@/lib/gym-catalog";
 
 const createGymSchema = z.object({
   name: z.string().min(2, "Gym name is required"),
@@ -38,6 +39,8 @@ export async function createGym(
     .values({ ...parsed.data, createdBySuperAdminId: superAdmin.id })
     .returning();
 
+  await populateGymFromFullCatalog(gym.id, superAdmin.id);
+
   try {
     const client = await clerkClient();
     const invitation = await client.invitations.createInvitation({
@@ -61,7 +64,7 @@ export async function createGym(
 
   revalidatePath("/super-admin/gyms");
   return {
-    success: `${gym.name} created — invite sent to ${gym.ownerEmail}. If it doesn't land in their inbox, copy the invite link from the gym card instead.`,
+    success: `${gym.name} created with the full equipment catalog — invite sent to ${gym.ownerEmail}. If it doesn't land in their inbox, copy the invite link from the gym card instead.`,
   };
 }
 

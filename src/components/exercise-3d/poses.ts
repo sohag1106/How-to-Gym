@@ -79,6 +79,10 @@ const POSES: Record<string, PoseFn> = {
     const k = pp(t, 0.6);
     return { ...NEUTRAL, spineX: 0.25 * k, hipsY: -0.4 * k, leftHipX: 1.1 * k, rightHipX: 1.1 * k, leftKnee: 1.3 * k, rightKnee: 1.3 * k, leftShoulderX: -1.5, rightShoulderX: -1.5, leftShoulderZ: 0.35, rightShoulderZ: -0.35, leftElbow: 1.55, rightElbow: 1.55 };
   },
+  deadlift: (t) => {
+    const k = pp(t, 0.55);
+    return { ...NEUTRAL, spineX: 0.95 * k, hipsY: -0.12 * k, leftHipX: 0.55 * k, rightHipX: 0.55 * k, leftKnee: 0.35 * k, rightKnee: 0.35 * k, leftShoulderX: -0.1, rightShoulderX: -0.1, leftShoulderZ: 0.05, rightShoulderZ: -0.05, leftElbow: 0.08, rightElbow: 0.08 };
+  },
   cardio_cycle: (t) => {
     const kL = pp(t, 1.6);
     const kR = pp(t, 1.6, 0.5);

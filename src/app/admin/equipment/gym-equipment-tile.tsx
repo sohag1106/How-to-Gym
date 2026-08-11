@@ -9,6 +9,7 @@ type Item = {
   name: string;
   imageData: string;
   movementPattern?: { label: string } | null;
+  exercises: { id: string }[];
 };
 
 export function GymEquipmentTile({ item }: { item: Item }) {
@@ -26,11 +27,9 @@ export function GymEquipmentTile({ item }: { item: Item }) {
         <p className="text-sm font-medium leading-tight line-clamp-2">
           {item.name}
         </p>
-        {item.movementPattern && (
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {item.movementPattern.label}
-          </p>
-        )}
+        <p className="text-xs text-muted-foreground mt-0.5">
+          {item.exercises.length} exercise{item.exercises.length === 1 ? "" : "s"}
+        </p>
       </div>
       <button
         type="button"

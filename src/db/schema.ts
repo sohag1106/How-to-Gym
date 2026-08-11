@@ -121,6 +121,30 @@ export const equipmentTemplates = pgTable("equipment_templates", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+/** All the exercises a given equipment TYPE can be used for (e.g. a barbell
+ * can do squats, deadlifts, bench press, rows...). Seeded/curated by the
+ * super admin against the master catalog; copied into a gym's own
+ * `exercises` for every matching `equipment` row it adds. */
+export const templateExercises = pgTable("template_exercises", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  equipmentTemplateId: uuid("equipment_template_id")
+    .notNull()
+    .references(() => equipmentTemplates.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  muscleGroupId: uuid("muscle_group_id")
+    .notNull()
+    .references(() => muscleGroups.id),
+  movementPatternId: uuid("movement_pattern_id")
+    .notNull()
+    .references(() => movementPatterns.id),
+  defaultSets: smallint("default_sets").notNull().default(3),
+  defaultReps: smallint("default_reps").notNull().default(10),
+  defaultRestSeconds: smallint("default_rest_seconds").notNull().default(60),
+  difficulty: difficultyEnum("difficulty").notNull().default("beginner"),
+  instructions: text("instructions").array().notNull().default([]),
+  sortOrder: smallint("sort_order").notNull().default(0),
+});
+
 export const equipment = pgTable("equipment", {
   id: uuid("id").primaryKey().defaultRandom(),
   gymId: uuid("gym_id")
@@ -146,6 +170,10 @@ export const exercises = pgTable("exercises", {
   equipmentId: uuid("equipment_id")
     .notNull()
     .references(() => equipment.id, { onDelete: "cascade" }),
+  sourceTemplateExerciseId: uuid("source_template_exercise_id").references(
+    () => templateExercises.id,
+    { onDelete: "set null" }
+  ),
   name: text("name").notNull(),
   defaultSets: smallint("default_sets").notNull().default(3),
   defaultReps: smallint("default_reps").notNull().default(10),
@@ -168,6 +196,8 @@ export const memberProfiles = pgTable("member_profiles", {
   daysPerWeek: smallint("days_per_week").notNull(),
   splitPreference: splitPreferenceEnum("split_preference").notNull(),
   offDays: integer("off_days").array().notNull().default([]),
+  heightCm: smallint("height_cm"),
+  weightKg: smallint("weight_kg"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -279,13 +309,32 @@ export const usersRelations = relations(users, ({ one, many }) => ({
 
 export const equipmentTemplatesRelations = relations(
   equipmentTemplates,
-  ({ one }) => ({
+  ({ one, many }) => ({
     muscleGroup: one(muscleGroups, {
       fields: [equipmentTemplates.muscleGroupId],
       references: [muscleGroups.id],
     }),
     movementPattern: one(movementPatterns, {
       fields: [equipmentTemplates.movementPatternId],
+      references: [movementPatterns.id],
+    }),
+    exercises: many(templateExercises),
+  })
+);
+
+export const templateExercisesRelations = relations(
+  templateExercises,
+  ({ one }) => ({
+    template: one(equipmentTemplates, {
+      fields: [templateExercises.equipmentTemplateId],
+      references: [equipmentTemplates.id],
+    }),
+    muscleGroup: one(muscleGroups, {
+      fields: [templateExercises.muscleGroupId],
+      references: [muscleGroups.id],
+    }),
+    movementPattern: one(movementPatterns, {
+      fields: [templateExercises.movementPatternId],
       references: [movementPatterns.id],
     }),
   })

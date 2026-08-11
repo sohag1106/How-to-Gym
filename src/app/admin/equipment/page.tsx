@@ -13,7 +13,7 @@ export default async function AdminEquipmentPage() {
   const [gymEquipment, templates, groups, patterns] = await Promise.all([
     db.query.equipment.findMany({
       where: eq(equipment.gymId, owner.gymId!),
-      with: { movementPattern: true },
+      with: { movementPattern: true, exercises: true },
       orderBy: asc(equipment.name),
     }),
     db.query.equipmentTemplates.findMany({
