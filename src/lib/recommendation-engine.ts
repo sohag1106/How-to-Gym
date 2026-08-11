@@ -242,22 +242,33 @@ export async function generateWorkoutPlan(userId: string) {
     .values({ userId, gymId: member.gymId, splitType: profile.splitPreference, active: true })
     .returning();
 
+  // Every exercise insert used to be its own awaited round-trip to Neon —
+  // fine at the old budget of 4-6 exercises/day, but the cardio finisher +
+  // bonus exercises added below can put a day at 10-11 exercises, and 7
+  // days' worth of one-row-at-a-time inserts started blowing past
+  // Cloudflare Workers' subrequest limit. Collect everything and issue one
+  // batched insert per table instead.
   let templateIndex = 0;
+  const dayInserts: (typeof workoutDays.$inferInsert)[] = [];
+  const dayMeta: { dayIndex: number; template: DayTemplate | null }[] = [];
   for (let dayIndex = 0; dayIndex <= 6; dayIndex++) {
     const isTrainingDay = trainingDaySet.has(dayIndex);
     const template = isTrainingDay ? templates[templateIndex % templates.length] : null;
     if (isTrainingDay) templateIndex++;
+    dayInserts.push({
+      planId: plan.id,
+      dayIndex,
+      focusLabel: template ? template.label : "Rest",
+      isRestDay: !isTrainingDay,
+    });
+    dayMeta.push({ dayIndex, template });
+  }
+  const insertedDays = await db.insert(workoutDays).values(dayInserts).returning();
 
-    const [day] = await db
-      .insert(workoutDays)
-      .values({
-        planId: plan.id,
-        dayIndex,
-        focusLabel: template ? template.label : "Rest",
-        isRestDay: !isTrainingDay,
-      })
-      .returning();
-
+  const exerciseRows: (typeof workoutDayExercises.$inferInsert)[] = [];
+  for (let i = 0; i < insertedDays.length; i++) {
+    const day = insertedDays[i];
+    const { dayIndex, template } = dayMeta[i];
     if (!template) continue;
 
     const pool = eligible.filter((e) => template.categories.includes(e.category));
@@ -340,7 +351,7 @@ export async function generateWorkoutPlan(userId: string) {
         ? (ex.patternKey.startsWith("cardio") ? 12 : 6) + (profile.goal === "fat_loss" ? 5 : 0)
         : estMinutes(sets, reps, restSeconds);
 
-      await db.insert(workoutDayExercises).values({
+      exerciseRows.push({
         workoutDayId: day.id,
         exerciseId: ex.id,
         order,
@@ -350,6 +361,10 @@ export async function generateWorkoutPlan(userId: string) {
         estMinutes: minutes,
       });
     }
+  }
+
+  if (exerciseRows.length > 0) {
+    await db.insert(workoutDayExercises).values(exerciseRows);
   }
 
   return plan;
