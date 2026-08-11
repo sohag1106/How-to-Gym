@@ -81,7 +81,15 @@ type DayTemplate = { label: string; categories: Category[]; count: number };
 /** A resolved day plan, unifying the category-based split styles with the
  * "custom" per-day muscle-group assignment under one shape the scheduling
  * loop can use without caring which mode produced it. */
-type DayPlan = { label: string; count: number; matches: (e: EligibleExercise) => boolean };
+type DayPlan = {
+  label: string;
+  count: number;
+  matches: (e: EligibleExercise) => boolean;
+  /** True for "custom"/"bro_split" days, which promise one specific muscle
+   * group — a forced cardio finisher would break that promise, so those
+   * days only get cardio if it fits in the bonus tier. */
+  isSingleMuscle: boolean;
+};
 
 function focusTemplates(split: SplitPreference, exerciseBudget: number): DayTemplate[] {
   switch (split) {
@@ -263,6 +271,7 @@ export async function generateWorkoutPlan(userId: string) {
         label: row.muscleGroup.name,
         count: budget,
         matches: (e) => e.muscleGroupId === row.muscleGroupId,
+        isSingleMuscle: true,
       });
     }
   } else if (profile.splitPreference === "bro_split") {
@@ -282,6 +291,7 @@ export async function generateWorkoutPlan(userId: string) {
         label: group.name,
         count: budget,
         matches: (e) => e.muscleGroupId === group.id,
+        isSingleMuscle: true,
       });
     }
   } else {
@@ -297,6 +307,7 @@ export async function generateWorkoutPlan(userId: string) {
         label: template.label,
         count: template.count,
         matches: (e) => template.categories.includes(e.category),
+        isSingleMuscle: false,
       });
     }
   }
@@ -366,16 +377,22 @@ export async function generateWorkoutPlan(userId: string) {
     );
 
     // A short cardio finisher on every training day, if the gym has any
-    // cardio equipment — the split templates above are strength-only, so
-    // cardio would otherwise never get scheduled at all. (Guarded against
-    // the core picks already containing a cardio exercise, which can
-    // happen in "custom" mode if a member dedicates the day to Cardio.)
-    const cardioPool = seededSort(
-      eligible.filter((e) => e.category === "cardio" && !picks.some((p) => p.id === e.id)),
-      `${userId}:${dayIndex}:cardio`
-    );
-    const cardioFinisher = cardioPool[0];
-    if (cardioFinisher) picks.push(cardioFinisher);
+    // cardio equipment — the category-based splits are strength-only, so
+    // cardio would otherwise never get scheduled at all. Single-muscle
+    // days (Custom, Body Part Split) skip this: they promise one specific
+    // muscle group, and forcing cardio into the core plan broke that —
+    // "Sprint Intervals" showing up as part of "Back" day. Those days
+    // only get cardio if a member explicitly dedicates a day to it (a
+    // custom "Cardio" day matches on its own via muscleGroupId, so it's
+    // unaffected by this skip) or if it fits in the bonus tier below.
+    if (!dayPlan.isSingleMuscle) {
+      const cardioPool = seededSort(
+        eligible.filter((e) => e.category === "cardio" && !picks.some((p) => p.id === e.id)),
+        `${userId}:${dayIndex}:cardio`
+      );
+      const cardioFinisher = cardioPool[0];
+      if (cardioFinisher) picks.push(cardioFinisher);
+    }
 
     // Extra, optional exercises appended after the core plan — invisible
     // on a normal day, but there for members who tell the session "how
