@@ -1,0 +1,1 @@
+ALTER TABLE "gyms" ADD COLUMN "auto_approve_members" boolean DEFAULT false NOT NULL;

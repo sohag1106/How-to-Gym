@@ -127,7 +127,9 @@ export function EquipmentFormDialog({
             <input type="hidden" name="muscleGroupId" value={muscleGroupId} />
             <Select value={muscleGroupId} onValueChange={(v) => setMuscleGroupId(v ?? "")}>
               <SelectTrigger className="w-full h-11 rounded-xl">
-                <SelectValue placeholder="Choose muscle group" />
+                <SelectValue placeholder="Choose muscle group">
+                  {(id: string) => groups.find((g) => g.id === id)?.name ?? id}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {groups.map((g) => (
@@ -151,7 +153,9 @@ export function EquipmentFormDialog({
               onValueChange={(v) => setMovementPatternId(v ?? "")}
             >
               <SelectTrigger className="w-full h-11 rounded-xl">
-                <SelectValue placeholder="Closest movement pattern" />
+                <SelectValue placeholder="Closest movement pattern">
+                  {(id: string) => patterns.find((p) => p.id === id)?.label ?? id}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {patterns.map((p) => (

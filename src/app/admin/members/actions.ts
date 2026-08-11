@@ -56,3 +56,9 @@ export async function rejectMember(memberId: string) {
   revalidatePath("/admin/members");
   return { success: true };
 }
+
+export async function setAutoApprove(enabled: boolean) {
+  const owner = await requireRole("gym_owner");
+  await db.update(gyms).set({ autoApproveMembers: enabled }).where(eq(gyms.id, owner.gymId!));
+  revalidatePath("/admin/members");
+}

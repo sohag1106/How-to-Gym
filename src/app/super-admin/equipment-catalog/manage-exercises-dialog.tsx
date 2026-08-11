@@ -149,7 +149,9 @@ function AddExerciseForm({
           <input type="hidden" name="muscleGroupId" value={muscleGroupId} />
           <Select value={muscleGroupId} onValueChange={(v) => setMuscleGroupId(v ?? "")}>
             <SelectTrigger className="w-full h-11 rounded-xl">
-              <SelectValue placeholder="Choose" />
+              <SelectValue placeholder="Choose">
+                {(id: string) => groups.find((g) => g.id === id)?.name ?? id}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {groups.map((g) => (
@@ -166,7 +168,9 @@ function AddExerciseForm({
           <input type="hidden" name="movementPatternId" value={movementPatternId} />
           <Select value={movementPatternId} onValueChange={(v) => setMovementPatternId(v ?? "")}>
             <SelectTrigger className="w-full h-11 rounded-xl">
-              <SelectValue placeholder="Closest match" />
+              <SelectValue placeholder="Closest match">
+                {(id: string) => patterns.find((p) => p.id === id)?.label ?? id}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {patterns.map((p) => (

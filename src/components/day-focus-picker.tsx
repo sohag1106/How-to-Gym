@@ -33,6 +33,7 @@ export function DayFocusPicker({
   onChange: (next: DayFocusValue) => void;
 }) {
   const trainingDayCount = Object.keys(value).length;
+  const labelFor = (id: string) => (id === REST ? "Rest" : muscleGroups.find((g) => g.id === id)?.name ?? id);
 
   return (
     <div className="flex flex-col gap-2">
@@ -51,7 +52,7 @@ export function DayFocusPicker({
               }}
             >
               <SelectTrigger className="h-10 rounded-xl flex-1">
-                <SelectValue />
+                <SelectValue>{labelFor}</SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value={REST}>Rest</SelectItem>

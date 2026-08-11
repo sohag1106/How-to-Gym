@@ -18,6 +18,25 @@ import type { OnboardingInput } from "@/app/onboarding/actions";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
+const EXPERIENCE_LABELS: Record<string, string> = {
+  beginner: "Beginner",
+  intermediate: "Intermediate",
+  advanced: "Advanced",
+};
+const GOAL_LABELS: Record<string, string> = {
+  muscle_gain: "Build muscle",
+  fat_loss: "Lose fat",
+  general_fitness: "General fitness",
+  strength: "Get stronger",
+};
+const SPLIT_LABELS: Record<string, string> = {
+  mixed_full_body: "Full Body",
+  upper_lower: "Upper / Lower",
+  push_pull_legs: "Push / Pull / Legs",
+  bro_split: "Body Part Split",
+  custom: "Choose my own days",
+};
+
 export function ProfileForm({
   profile,
   muscleGroups,
@@ -71,7 +90,7 @@ export function ProfileForm({
       <Field label="Experience">
         <Select value={experienceLevel} onValueChange={(v) => setExperienceLevel(v as typeof experienceLevel)}>
           <SelectTrigger className="w-full h-11 rounded-xl">
-            <SelectValue />
+            <SelectValue>{(v: string) => EXPERIENCE_LABELS[v] ?? v}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="beginner">Beginner</SelectItem>
@@ -84,7 +103,7 @@ export function ProfileForm({
       <Field label="Goal">
         <Select value={goal} onValueChange={(v) => setGoal(v as typeof goal)}>
           <SelectTrigger className="w-full h-11 rounded-xl">
-            <SelectValue />
+            <SelectValue>{(v: string) => GOAL_LABELS[v] ?? v}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="muscle_gain">Build muscle</SelectItem>
@@ -98,7 +117,7 @@ export function ProfileForm({
       <Field label="Split style">
         <Select value={splitPreference} onValueChange={(v) => setSplitPreference(v as typeof splitPreference)}>
           <SelectTrigger className="w-full h-11 rounded-xl">
-            <SelectValue />
+            <SelectValue>{(v: string) => SPLIT_LABELS[v] ?? v}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="mixed_full_body">Full Body</SelectItem>

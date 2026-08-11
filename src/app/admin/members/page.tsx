@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { gyms, users } from "@/db/schema";
 import { requireRole } from "@/lib/auth";
 import { MemberRow } from "./member-row";
+import { AutoApproveToggle } from "./auto-approve-toggle";
 
 export default async function MembersPage() {
   const owner = await requireRole("gym_owner");
@@ -26,6 +27,8 @@ export default async function MembersPage() {
           {approved.length} / {gym.memberLimit} members approved
         </p>
       </div>
+
+      <AutoApproveToggle initialEnabled={gym.autoApproveMembers} />
 
       {pending.length > 0 && (
         <section>

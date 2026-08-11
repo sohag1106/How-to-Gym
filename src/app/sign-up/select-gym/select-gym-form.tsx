@@ -32,7 +32,9 @@ export function SelectGymForm({ gyms }: { gyms: Gym[] }) {
         <Select value={gymId} onValueChange={(value) => setGymId(value ?? "")}>
           <SelectTrigger id="gym" className="w-full h-12 rounded-xl">
             <Building2 className="size-4 text-muted-foreground" />
-            <SelectValue placeholder="Choose your gym" />
+            <SelectValue placeholder="Choose your gym">
+              {(id: string) => gyms.find((g) => g.id === id)?.name ?? id}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {gyms.length === 0 && (

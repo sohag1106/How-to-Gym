@@ -73,6 +73,7 @@ export const gyms = pgTable("gyms", {
   ownerPhone: text("owner_phone").notNull(),
   memberLimit: integer("member_limit").notNull().default(50),
   active: boolean("active").notNull().default(true),
+  autoApproveMembers: boolean("auto_approve_members").notNull().default(false),
   createdBySuperAdminId: uuid("created_by_super_admin_id"),
   invitationId: text("invitation_id"),
   invitationUrl: text("invitation_url"),
