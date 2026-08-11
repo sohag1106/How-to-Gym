@@ -108,6 +108,16 @@ export const movementPatterns = pgTable("movement_patterns", {
   animationClipKey: text("animation_clip_key").notNull(),
 });
 
+/** A shared, reusable animated-style demo (two crossfading photos of the
+ * movement's start/end position) sourced from the free-exercise-db public
+ * domain dataset. Many exercises across many gyms point at the same demo. */
+export const exerciseDemos = pgTable("exercise_demos", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  sourceName: text("source_name").notNull(),
+  imageStart: text("image_start").notNull(),
+  imageEnd: text("image_end").notNull(),
+});
+
 export const equipmentTemplates = pgTable("equipment_templates", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
@@ -137,6 +147,7 @@ export const templateExercises = pgTable("template_exercises", {
   movementPatternId: uuid("movement_pattern_id")
     .notNull()
     .references(() => movementPatterns.id),
+  exerciseDemoId: uuid("exercise_demo_id").references(() => exerciseDemos.id),
   defaultSets: smallint("default_sets").notNull().default(3),
   defaultReps: smallint("default_reps").notNull().default(10),
   defaultRestSeconds: smallint("default_rest_seconds").notNull().default(60),
@@ -176,6 +187,7 @@ export const exercises = pgTable("exercises", {
   ),
   name: text("name").notNull(),
   movementPatternId: uuid("movement_pattern_id").references(() => movementPatterns.id),
+  exerciseDemoId: uuid("exercise_demo_id").references(() => exerciseDemos.id),
   defaultSets: smallint("default_sets").notNull().default(3),
   defaultReps: smallint("default_reps").notNull().default(10),
   defaultRestSeconds: smallint("default_rest_seconds").notNull().default(60),
@@ -338,6 +350,10 @@ export const templateExercisesRelations = relations(
       fields: [templateExercises.movementPatternId],
       references: [movementPatterns.id],
     }),
+    demo: one(exerciseDemos, {
+      fields: [templateExercises.exerciseDemoId],
+      references: [exerciseDemos.id],
+    }),
   })
 );
 
@@ -366,6 +382,10 @@ export const exercisesRelations = relations(exercises, ({ one }) => ({
   movementPattern: one(movementPatterns, {
     fields: [exercises.movementPatternId],
     references: [movementPatterns.id],
+  }),
+  demo: one(exerciseDemos, {
+    fields: [exercises.exerciseDemoId],
+    references: [exerciseDemos.id],
   }),
 }));
 

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { X, Check, SkipForward, PartyPopper, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ExerciseDemo3D } from "@/components/exercise-3d/exercise-demo";
+import { ExerciseDemoGif } from "@/components/exercise-demo/exercise-demo-gif";
 import { markExercise, completeSession } from "./actions";
 
 type SessionExercise = {
@@ -19,7 +19,7 @@ type SessionExercise = {
   exerciseName: string;
   equipmentName: string;
   equipmentImage: string;
-  patternKey: string;
+  demoId: string | null;
 };
 
 export function SessionStepper({
@@ -101,7 +101,7 @@ export function SessionStepper({
       </p>
 
       <div className="flex-1 flex flex-col mt-5 gap-4">
-        <ExerciseDemo3D patternKey={current.patternKey} />
+        <ExerciseDemoGif key={current.id} demoId={current.demoId} />
 
         <div className="flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}

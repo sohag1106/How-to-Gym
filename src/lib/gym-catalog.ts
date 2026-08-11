@@ -50,6 +50,7 @@ export async function addTemplateToGym(
           sourceTemplateExerciseId: ex.id,
           name: ex.name,
           movementPatternId: ex.movementPatternId,
+          exerciseDemoId: ex.exerciseDemoId,
           defaultSets: ex.defaultSets,
           defaultReps: ex.defaultReps,
           defaultRestSeconds: ex.defaultRestSeconds,

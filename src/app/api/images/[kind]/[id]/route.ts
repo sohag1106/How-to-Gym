@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { equipment, equipmentTemplates } from "@/db/schema";
+import { equipment, equipmentTemplates, exerciseDemos } from "@/db/schema";
 
 /**
  * Serves equipment/template photos from their own tiny URL instead of
@@ -28,6 +28,12 @@ export async function GET(
       .from(equipmentTemplates)
       .where(eq(equipmentTemplates.id, id));
     imageData = row?.imageData;
+  } else if (kind === "demo-start" || kind === "demo-end") {
+    const [row] = await db
+      .select({ imageStart: exerciseDemos.imageStart, imageEnd: exerciseDemos.imageEnd })
+      .from(exerciseDemos)
+      .where(eq(exerciseDemos.id, id));
+    imageData = kind === "demo-start" ? row?.imageStart : row?.imageEnd;
   }
 
   if (!imageData) return new Response("Not found", { status: 404 });
