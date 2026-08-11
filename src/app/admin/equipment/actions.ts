@@ -23,6 +23,7 @@ async function createDefaultExercise(
   await db.insert(exercises).values({
     equipmentId,
     name,
+    movementPatternId,
     defaultSets: d.sets,
     defaultReps: d.reps,
     defaultRestSeconds: d.restSeconds,

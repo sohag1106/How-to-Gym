@@ -22,7 +22,10 @@ export default async function SessionPage({
         orderBy: asc(workoutSessionExercises.order),
         with: {
           exercise: {
-            with: { equipment: { with: { movementPattern: true } } },
+            with: {
+              equipment: { with: { movementPattern: true } },
+              movementPattern: true,
+            },
           },
         },
       },
@@ -40,7 +43,7 @@ export default async function SessionPage({
     exerciseName: row.exercise.name,
     equipmentName: row.exercise.equipment.name,
     equipmentImage: equipmentImageUrl(row.exercise.equipment.id),
-    patternKey: row.exercise.equipment.movementPattern.key,
+    patternKey: (row.exercise.movementPattern ?? row.exercise.equipment.movementPattern).key,
   }));
 
   return (

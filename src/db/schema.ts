@@ -175,6 +175,7 @@ export const exercises = pgTable("exercises", {
     { onDelete: "set null" }
   ),
   name: text("name").notNull(),
+  movementPatternId: uuid("movement_pattern_id").references(() => movementPatterns.id),
   defaultSets: smallint("default_sets").notNull().default(3),
   defaultReps: smallint("default_reps").notNull().default(10),
   defaultRestSeconds: smallint("default_rest_seconds").notNull().default(60),
@@ -361,6 +362,10 @@ export const exercisesRelations = relations(exercises, ({ one }) => ({
   equipment: one(equipment, {
     fields: [exercises.equipmentId],
     references: [equipment.id],
+  }),
+  movementPattern: one(movementPatterns, {
+    fields: [exercises.movementPatternId],
+    references: [movementPatterns.id],
   }),
 }));
 

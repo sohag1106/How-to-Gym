@@ -1,5 +1,6 @@
 import "server-only";
 import { eq } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import { db } from "@/db";
 import {
   equipment,
@@ -14,6 +15,8 @@ import {
   type goalEnum,
   type splitPreferenceEnum,
 } from "@/db/schema";
+
+const equipmentMovementPatterns = alias(movementPatterns, "equipment_movement_patterns");
 
 type Goal = (typeof goalEnum.enumValues)[number];
 type SplitPreference = (typeof splitPreferenceEnum.enumValues)[number];
@@ -164,21 +167,32 @@ export async function generateWorkoutPlan(userId: string) {
   });
   if (!profile) throw new Error("Member has no profile");
 
-  const gymExercises = await db
+  const gymExercisesRaw = await db
     .select({
       id: exercises.id,
       name: exercises.name,
       equipmentId: exercises.equipmentId,
       muscleGroupId: equipment.muscleGroupId,
-      patternKey: movementPatterns.key,
+      exercisePatternKey: movementPatterns.key,
+      equipmentPatternKey: equipmentMovementPatterns.key,
       defaultSets: exercises.defaultSets,
       defaultReps: exercises.defaultReps,
       defaultRestSeconds: exercises.defaultRestSeconds,
     })
     .from(exercises)
     .innerJoin(equipment, eq(exercises.equipmentId, equipment.id))
-    .innerJoin(movementPatterns, eq(equipment.movementPatternId, movementPatterns.id))
+    .innerJoin(equipmentMovementPatterns, eq(equipment.movementPatternId, equipmentMovementPatterns.id))
+    .leftJoin(movementPatterns, eq(exercises.movementPatternId, movementPatterns.id))
     .where(eq(equipment.gymId, member.gymId));
+
+  // Each exercise on a piece of equipment can be a different movement than
+  // the equipment's own default (a squat rack also does bench press, rack
+  // pulls, overhead press) — prefer the exercise's own pattern and only
+  // fall back to the equipment's for rows predating that column.
+  const gymExercises = gymExercisesRaw.map((e) => ({
+    ...e,
+    patternKey: e.exercisePatternKey ?? e.equipmentPatternKey,
+  }));
 
   const rules = await db
     .select()
