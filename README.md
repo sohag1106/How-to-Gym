@@ -1,36 +1,71 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# How to Gym
 
-## Getting Started
+A mobile-first gym companion app. Members sign up, get approved by their gym's
+owner, answer a short onboarding questionnaire, and get a weekly workout plan
+built only from equipment their specific gym actually has (recognized by
+photo, not name). Each session asks how much time is available and trims the
+plan to fit, then walks through every exercise with a live 3D movement demo.
 
-First, run the development server:
+Three roles:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Super Admin** — creates gyms, invites gym owners, sets member caps,
+  curates the master equipment photo catalog.
+- **Gym Owner** — builds their gym's equipment inventory (from the catalog or
+  a custom photo upload), approves/rejects member signups, can assign or
+  block specific exercises per member.
+- **Member** — signs up against a specific gym, gets approved, fills the
+  onboarding questionnaire, and trains from the generated plan.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Next.js 16 (App Router) · TypeScript · Tailwind + shadcn/ui · Clerk (auth) ·
+Neon Postgres + Drizzle ORM · React Three Fiber (3D exercise demos)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Setup
 
-## Learn More
+1. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+2. **Environment variables** — copy `.env.example` to `.env.local` and fill in:
+   - `DATABASE_URL` — full Neon connection string (Neon dashboard → Connection Details)
+   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` / `CLERK_SECRET_KEY` — from your Clerk app dashboard
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. **Database**
+   ```bash
+   npm run db:generate   # regenerate SQL migrations after a schema change
+   npm run db:migrate    # apply migrations to the database
+   npm run db:seed       # load the 18 sample equipment photos into the master catalog
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+4. **Run**
+   ```bash
+   npm run dev
+   ```
 
-## Deploy on Vercel
+## First run
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+There's no separate "make me an admin" step — **the first person to ever
+sign up automatically becomes the Super Admin**. Sign up once, and you're in
+the Super Admin dashboard at `/super-admin/gyms`. From there:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Create a gym (this sends the owner an email invite via Clerk).
+2. The gym owner accepts the invite, signs in, and builds their equipment
+   inventory at `/admin/equipment` from the master catalog or their own photos.
+3. Members sign up at `/sign-up`, pick that gym, and wait for the owner to
+   approve them from `/admin/members`.
+4. Once approved, a member completes onboarding and gets their plan.
+
+## Notes for future work
+
+- Equipment photos are stored as base64 in Postgres for simplicity. If photo
+  volume grows, swap `imageData` for a Vercel Blob URL — the read paths only
+  care that it's a string usable in an `<img src>`.
+- The 3D exercise demo is a procedurally-rigged low-poly character (no
+  external model/animation assets), animated per **movement pattern**
+  (`src/components/exercise-3d/poses.ts`), not per individual exercise. New
+  equipment just needs to be mapped to the closest existing pattern.
+- The recommendation engine (`src/lib/recommendation-engine.ts`) is a
+  deterministic rules engine, not ML — it's the place to tune set/rep/rest
+  logic or add new split types.
