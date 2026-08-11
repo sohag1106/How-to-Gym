@@ -57,6 +57,37 @@ the Super Admin dashboard at `/super-admin/gyms`. From there:
    approve them from `/admin/members`.
 4. Once approved, a member completes onboarding and gets their plan.
 
+## Deployment (Cloudflare Workers)
+
+Deployed via the [OpenNext Cloudflare adapter](https://opennext.js.org/cloudflare), live at
+`https://how-to-gym.<your-workers-subdomain>.workers.dev`.
+
+```bash
+npx wrangler login                          # one-time interactive auth (or set CLOUDFLARE_API_TOKEN)
+npx wrangler secret put DATABASE_URL        # paste the Neon connection string
+npx wrangler secret put CLERK_SECRET_KEY    # paste the Clerk secret key
+
+NEXT_PUBLIC_APP_URL=https://how-to-gym.<your-workers-subdomain>.workers.dev npm run cf:deploy
+```
+
+`NEXT_PUBLIC_APP_URL` must be passed at build time (it's inlined into the client
+bundle and used for Clerk gym-owner invite redirect links) — set it inline as
+above rather than editing `.env.local`, so local dev keeps using `localhost`.
+
+Notes:
+- **`src/middleware.ts` is intentionally not renamed to Next 16's `proxy.ts`**
+  — the OpenNext adapter doesn't yet detect that convention
+  ([opennextjs-cloudflare#962](https://github.com/opennextjs/opennextjs-cloudflare/issues/962)).
+  Next will print a harmless deprecation warning at build time; leave it as-is
+  until that's fixed upstream.
+- For local Worker-runtime testing (`npm run cf:preview`), copy
+  `.dev.vars.example` to `.dev.vars` and fill in the same secrets.
+- The Clerk keys currently in use are **development-instance** keys (strict
+  usage limits, shows a "Development mode" badge on auth screens). Before
+  real public launch, create a Production instance in the Clerk dashboard,
+  add the live domain to it, and swap in the production keys as both the
+  Worker secret and the local `.env.local` value.
+
 ## Notes for future work
 
 - Equipment photos are stored as base64 in Postgres for simplicity. If photo
