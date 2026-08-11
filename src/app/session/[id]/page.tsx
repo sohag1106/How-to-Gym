@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { db } from "@/db";
 import { workoutSessionExercises, workoutSessions } from "@/db/schema";
 import { ensureAppUser } from "@/lib/auth";
+import { equipmentImageUrl } from "@/lib/image-url";
 import { SessionStepper } from "./session-stepper";
 
 export default async function SessionPage({
@@ -38,7 +39,7 @@ export default async function SessionPage({
     instructions: row.exercise.instructions,
     exerciseName: row.exercise.name,
     equipmentName: row.exercise.equipment.name,
-    equipmentImage: row.exercise.equipment.imageData,
+    equipmentImage: equipmentImageUrl(row.exercise.equipment.id),
     patternKey: row.exercise.equipment.movementPattern.key,
   }));
 

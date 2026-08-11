@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { Trash2 } from "lucide-react";
+import { templateImageUrl } from "@/lib/image-url";
 import { deleteEquipmentTemplate } from "./actions";
 import { ManageExercisesDialog } from "./manage-exercises-dialog";
 
@@ -10,7 +11,6 @@ type Option = { id: string; name?: string; label?: string };
 type Template = {
   id: string;
   name: string;
-  imageData: string;
   movementPattern?: { label: string } | null;
   exercises: { id: string; name: string; movementPattern?: { label: string } | null }[];
 };
@@ -30,7 +30,7 @@ export function TemplateCard({
     <div className="group relative rounded-2xl overflow-hidden border border-border bg-card">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={template.imageData}
+        src={templateImageUrl(template.id)}
         alt={template.name}
         className="w-full aspect-square object-cover"
       />

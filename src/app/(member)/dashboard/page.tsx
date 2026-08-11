@@ -2,6 +2,7 @@ import { and, asc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { equipment, exercises, workoutDayExercises, workoutDays, workoutPlans } from "@/db/schema";
 import { ensureAppUser } from "@/lib/auth";
+import { equipmentImageUrl } from "@/lib/image-url";
 import { StartSessionCard } from "./start-session-card";
 import { Moon } from "lucide-react";
 
@@ -33,7 +34,7 @@ export default async function DashboardPage() {
           reps: workoutDayExercises.reps,
           estMinutes: workoutDayExercises.estMinutes,
           exerciseName: exercises.name,
-          equipmentImage: equipment.imageData,
+          equipmentId: equipment.id,
         })
         .from(workoutDayExercises)
         .innerJoin(exercises, eq(workoutDayExercises.exerciseId, exercises.id))
@@ -79,7 +80,7 @@ export default async function DashboardPage() {
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={ex.equipmentImage}
+                    src={equipmentImageUrl(ex.equipmentId)}
                     alt=""
                     className="size-12 rounded-xl object-cover shrink-0"
                   />

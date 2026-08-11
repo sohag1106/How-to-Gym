@@ -2,12 +2,12 @@
 
 import { useTransition } from "react";
 import { Trash2 } from "lucide-react";
+import { equipmentImageUrl } from "@/lib/image-url";
 import { removeEquipment } from "./actions";
 
 type Item = {
   id: string;
   name: string;
-  imageData: string;
   movementPattern?: { label: string } | null;
   exercises: { id: string }[];
 };
@@ -19,7 +19,7 @@ export function GymEquipmentTile({ item }: { item: Item }) {
     <div className="group relative rounded-2xl overflow-hidden border border-border bg-card">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={item.imageData}
+        src={equipmentImageUrl(item.id)}
         alt={item.name}
         className="w-full aspect-square object-cover"
       />

@@ -2,12 +2,12 @@
 
 import { useState, useTransition } from "react";
 import { Plus, Check } from "lucide-react";
+import { templateImageUrl } from "@/lib/image-url";
 import { addFromTemplate } from "./actions";
 
 type Template = {
   id: string;
   name: string;
-  imageData: string;
   movementPattern?: { label: string } | null;
 };
 
@@ -20,7 +20,7 @@ export function TemplatePickTile({ template }: { template: Template }) {
     <div className="relative rounded-2xl overflow-hidden border border-border bg-card">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={template.imageData}
+        src={templateImageUrl(template.id)}
         alt={template.name}
         className="w-full aspect-square object-cover opacity-90"
       />

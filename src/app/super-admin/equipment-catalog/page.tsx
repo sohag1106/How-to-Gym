@@ -7,6 +7,7 @@ import { TemplateCard } from "./template-card";
 export default async function EquipmentCatalogPage() {
   const [templates, groups, patterns] = await Promise.all([
     db.query.equipmentTemplates.findMany({
+      columns: { imageData: false },
       with: {
         muscleGroup: true,
         movementPattern: true,
