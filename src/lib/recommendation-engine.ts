@@ -282,8 +282,51 @@ export async function generateWorkoutPlan(userId: string) {
       (a, b) => (COMPOUND_PRIORITY[a.patternKey] ?? 2) - (COMPOUND_PRIORITY[b.patternKey] ?? 2)
     );
 
-    for (let order = 0; order < picks.length; order++) {
-      const ex = picks[order];
+    // A short cardio finisher on every training day, if the gym has any
+    // cardio equipment — the split templates above are strength-only, so
+    // cardio would otherwise never get scheduled at all.
+    const cardioPool = seededSort(
+      eligible.filter((e) => e.category === "cardio"),
+      `${userId}:${dayIndex}:cardio`
+    );
+    const cardioFinisher = cardioPool[0];
+    if (cardioFinisher) picks.push(cardioFinisher);
+
+    // Extra, optional exercises appended after the core plan — invisible
+    // on a normal day, but there for members who tell the session "how
+    // much time do you have?" prompt they have more time than usual;
+    // startSession's greedy time-fit picks these up automatically since
+    // they're last in `order`.
+    const BONUS_COUNT = 4;
+    const notPicked = (e: EligibleExercise) => !picks.some((p) => p.id === e.id);
+    const bonusFromFocus = seededSort(pool.filter(notPicked), `${userId}:${dayIndex}:bonus`);
+    const bonusFromRest = seededSort(eligible.filter(notPicked), `${userId}:${dayIndex}:bonus2`).filter(
+      (e) => !bonusFromFocus.some((b) => b.id === e.id)
+    );
+    const bonusCandidates = [...bonusFromFocus, ...bonusFromRest];
+    // Same equipment-diversity preference as the core picks above — favor
+    // spreading across different machines before repeating one.
+    const bonusPicks: EligibleExercise[] = [];
+    for (const ex of bonusCandidates) {
+      if (bonusPicks.length >= BONUS_COUNT) break;
+      if (seenEquipment.has(ex.equipmentId)) continue;
+      bonusPicks.push(ex);
+      seenEquipment.add(ex.equipmentId);
+    }
+    if (bonusPicks.length < BONUS_COUNT) {
+      for (const ex of bonusCandidates) {
+        if (bonusPicks.length >= BONUS_COUNT) break;
+        if (!bonusPicks.find((p) => p.id === ex.id)) bonusPicks.push(ex);
+      }
+    }
+    bonusPicks.sort(
+      (a, b) => (COMPOUND_PRIORITY[a.patternKey] ?? 2) - (COMPOUND_PRIORITY[b.patternKey] ?? 2)
+    );
+
+    const allPicks = [...picks, ...bonusPicks];
+
+    for (let order = 0; order < allPicks.length; order++) {
+      const ex = allPicks[order];
       const isCardioOrMobility = ex.category === "cardio" || ex.patternKey === "mobility_stretch";
       const adjusted = applyGoalAdjustment(profile.goal, {
         sets: ex.defaultSets,
