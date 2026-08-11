@@ -50,7 +50,9 @@ const POSES: Record<string, PoseFn> = {
   },
   chest_fly: (t) => {
     const k = pp(t);
-    return { ...NEUTRAL, leftShoulderZ: 0.2 + 1.1 * k, rightShoulderZ: -0.2 - 1.1 * k, leftShoulderX: -0.3, rightShoulderX: -0.3, leftElbow: 0.4, rightElbow: 0.4 };
+    // Unlike a press, a fly keeps the elbow nearly fixed — the shoulder
+    // does the work of squeezing the arms together, not the triceps.
+    return { ...NEUTRAL, leftShoulderZ: 0.85, rightShoulderZ: -0.85, leftShoulderX: -1.2 * k, rightShoulderX: -1.2 * k, leftElbow: 0.35, rightElbow: 0.35 };
   },
   shoulder_press: (t) => {
     const k = pp(t);
@@ -66,7 +68,10 @@ const POSES: Record<string, PoseFn> = {
   },
   cable_row: (t) => {
     const k = pp(t);
-    return { ...NEUTRAL, spineX: 0.35, leftShoulderX: -0.4 - 0.3 * k, rightShoulderX: -0.4 - 0.3 * k, leftShoulderZ: 0.25, rightShoulderZ: -0.25, leftElbow: 1.5 - 1.2 * k, rightElbow: 1.5 - 1.2 * k, leftKnee: 0.5, rightKnee: 0.5 };
+    // A seated row needs matching hip flexion alongside the knee bend, or
+    // the feet lift off the floor entirely and the character reads as
+    // floating instead of sitting at the machine.
+    return { ...NEUTRAL, spineX: 0.45 - 0.3 * k, leftShoulderX: -0.4 - 0.3 * k, rightShoulderX: -0.4 - 0.3 * k, leftShoulderZ: 0.25, rightShoulderZ: -0.25, leftElbow: 1.5 - 1.2 * k, rightElbow: 1.5 - 1.2 * k, leftHipX: 1.2, rightHipX: 1.2, leftKnee: 1.3, rightKnee: 1.3 };
   },
   bicep_curl: (t) => {
     const k = pp(t);
