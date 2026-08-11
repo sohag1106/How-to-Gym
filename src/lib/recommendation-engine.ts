@@ -96,14 +96,6 @@ function focusTemplates(split: SplitPreference, exerciseBudget: number): DayTemp
         { label: "Pull", categories: ["pull"], count: exerciseBudget },
         { label: "Legs & Core", categories: ["legs", "core"], count: exerciseBudget },
       ];
-    case "bro_split":
-      return [
-        { label: "Chest", categories: ["push"], count: exerciseBudget },
-        { label: "Back", categories: ["pull"], count: exerciseBudget },
-        { label: "Legs", categories: ["legs"], count: exerciseBudget },
-        { label: "Shoulders", categories: ["push"], count: exerciseBudget },
-        { label: "Arms", categories: ["pull"], count: exerciseBudget },
-      ];
     case "mixed_full_body":
     default:
       return [
@@ -233,8 +225,18 @@ export async function generateWorkoutPlan(userId: string) {
 
   // The "custom" split replaces daysPerWeek/offDays/category-rotation
   // entirely with an explicit member-chosen day -> muscle group mapping
-  // (e.g. "Monday = Legs, Wednesday = Chest") — every other split style
-  // keeps the existing rotate-through-categories scheduling.
+  // (e.g. "Monday = Legs, Wednesday = Chest").
+  //
+  // "Body Part Split" also promises one specific muscle per day (its day
+  // labels are literally "Chest"/"Back"/"Shoulders"/"Arms"), so it needs
+  // the same exact-muscle-group filtering, not the coarser push/pull
+  // categories the other splits use — "pull" alone covers both rows and
+  // bicep curls, which used to leak curls into "Back" day and rows into
+  // "Arms" day since both are tagged "pull".
+  //
+  // The remaining splits (Full Body, Upper/Lower, Push/Pull/Legs) are
+  // genuinely about movement-pattern grouping rather than single-muscle
+  // isolation, so they keep the category-based rotation.
   const dayPlanByIndex = new Map<number, DayPlan>();
   if (profile.splitPreference === "custom") {
     const focusRows = await db.query.memberDayFocus.findMany({
@@ -246,6 +248,26 @@ export async function generateWorkoutPlan(userId: string) {
         label: row.muscleGroup.name,
         count: budget,
         matches: (e) => e.muscleGroupId === row.muscleGroupId,
+      });
+    }
+  } else if (profile.splitPreference === "bro_split") {
+    const allMuscleGroups = await db.select().from(muscleGroups);
+    const idByName = new Map(allMuscleGroups.map((g) => [g.name, g.id]));
+    const rotation = ["Chest", "Back", "Legs", "Shoulders", "Arms"]
+      .map((name) => ({ name, id: idByName.get(name) }))
+      .filter((g): g is { name: string; id: string } => !!g.id);
+
+    const offDaySet = new Set(profile.offDays);
+    const candidateDays = [0, 1, 2, 3, 4, 5, 6].filter((d) => !offDaySet.has(d));
+    const trainingDays = candidateDays.slice(0, Math.min(profile.daysPerWeek, candidateDays.length));
+    let rotationIndex = 0;
+    for (const dayIndex of trainingDays) {
+      const group = rotation[rotationIndex % rotation.length];
+      rotationIndex++;
+      dayPlanByIndex.set(dayIndex, {
+        label: group.name,
+        count: budget,
+        matches: (e) => e.muscleGroupId === group.id,
       });
     }
   } else {
