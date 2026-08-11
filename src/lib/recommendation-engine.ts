@@ -334,6 +334,7 @@ export async function generateWorkoutPlan(userId: string) {
       (a, b) => (COMPOUND_PRIORITY[a.patternKey] ?? 2) - (COMPOUND_PRIORITY[b.patternKey] ?? 2)
     );
 
+    const coreCount = picks.length;
     const allPicks = [...picks, ...bonusPicks];
 
     for (let order = 0; order < allPicks.length; order++) {
@@ -359,6 +360,7 @@ export async function generateWorkoutPlan(userId: string) {
         reps,
         restSeconds,
         estMinutes: minutes,
+        isBonus: order >= coreCount,
       });
     }
   }

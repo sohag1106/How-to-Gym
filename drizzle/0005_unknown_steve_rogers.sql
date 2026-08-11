@@ -1,0 +1,1 @@
+ALTER TABLE "workout_day_exercises" ADD COLUMN "is_bonus" boolean DEFAULT false NOT NULL;

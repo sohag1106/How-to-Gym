@@ -271,6 +271,12 @@ export const workoutDayExercises = pgTable("workout_day_exercises", {
   reps: smallint("reps").notNull(),
   restSeconds: smallint("rest_seconds").notNull(),
   estMinutes: smallint("est_minutes").notNull(),
+  // Optional extra work appended after the core plan for members with a
+  // bigger-than-default time budget — excluded from the dashboard's
+  // "today's plan" preview so it doesn't overstate what a normal-length
+  // session actually covers, but still reachable by startSession's
+  // greedy time-fit when there's room for it.
+  isBonus: boolean("is_bonus").notNull().default(false),
 });
 
 export const workoutSessions = pgTable("workout_sessions", {

@@ -26,13 +26,14 @@ export default async function DashboardPage() {
       })
     : null;
 
-  const dayExercises = day
+  const allDayExercises = day
     ? await db
         .select({
           id: workoutDayExercises.id,
           sets: workoutDayExercises.sets,
           reps: workoutDayExercises.reps,
           estMinutes: workoutDayExercises.estMinutes,
+          isBonus: workoutDayExercises.isBonus,
           exerciseName: exercises.name,
           equipmentId: equipment.id,
         })
@@ -43,6 +44,10 @@ export default async function DashboardPage() {
         .orderBy(asc(workoutDayExercises.order))
     : [];
 
+  // Bonus exercises only ever show up if a member asks for extra time on
+  // the "how much time do you have?" prompt — leaving them out of this
+  // preview keeps it matching what a normal-length session actually does.
+  const dayExercises = allDayExercises.filter((e) => !e.isBonus);
   const totalMinutes = dayExercises.reduce((sum, e) => sum + e.estMinutes, 0);
 
   return (
