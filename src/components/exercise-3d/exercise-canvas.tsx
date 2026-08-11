@@ -3,49 +3,30 @@
 import { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, ContactShadows } from "@react-three/drei";
-import { Humanoid } from "./humanoid";
+import { MixamoCharacter } from "./mixamo-character";
 
-const CATEGORY_BY_PATTERN: Record<string, "arms" | "legs" | "core"> = {
-  chest_press: "arms",
-  chest_fly: "arms",
-  shoulder_press: "arms",
-  lat_pulldown: "arms",
-  pull_up: "arms",
-  cable_row: "arms",
-  bicep_curl: "arms",
-  tricep_dip: "arms",
-  leg_press: "legs",
-  leg_curl: "legs",
-  leg_extension: "legs",
-  squat: "legs",
-  deadlift: "legs",
-  cardio_cycle: "legs",
-  cardio_run: "legs",
-  mobility_stretch: "core",
-};
-
-const DEFAULT_CAMERA: [number, number, number] = [1.6, 1.3, 2.2];
-const DEFAULT_TARGET: [number, number, number] = [0, 1.05, 0];
+const DEFAULT_CAMERA: [number, number, number] = [1.5, 1.2, 2.1];
+const DEFAULT_TARGET: [number, number, number] = [0, 0.95, 0];
 
 // A 3/4 angle (not a pure side view) reads hip-hinge/knee-tracking exercises
 // well while keeping the bar visible instead of edge-on; front-ish angles
 // read bar-path/pulling exercises best. Everything else keeps the default.
 const CAMERA_BY_PATTERN: Record<string, [number, number, number]> = {
-  squat: [2.0, 1.15, 1.0],
-  deadlift: [2.0, 1.05, 1.0],
-  leg_press: [2.2, 1.05, 0.7],
-  leg_curl: [2.2, 1.05, 0.7],
-  leg_extension: [2.2, 1.05, 0.7],
-  lat_pulldown: [0.3, 1.3, 2.6],
-  pull_up: [0.5, 1.55, 3.2],
-  cable_row: [2.2, 1.15, 0.9],
-  chest_fly: [0.25, 1.3, 2.5],
+  squat: [1.9, 1.05, 0.95],
+  deadlift: [1.9, 0.95, 0.95],
+  leg_press: [2.1, 0.95, 0.65],
+  leg_curl: [2.1, 0.95, 0.65],
+  leg_extension: [2.1, 0.95, 0.65],
+  lat_pulldown: [0.3, 1.2, 2.5],
+  pull_up: [0.5, 1.45, 3.1],
+  cable_row: [2.1, 1.05, 0.85],
+  chest_fly: [0.25, 1.2, 2.4],
 };
 
 // Overhead-reaching exercises need the orbit target raised so the bar and
 // hands stay in frame instead of getting cropped off the top.
 const TARGET_BY_PATTERN: Record<string, [number, number, number]> = {
-  pull_up: [0, 1.35, 0],
+  pull_up: [0, 1.25, 0],
 };
 
 export function ExerciseCanvas({ patternKey }: { patternKey: string }) {
@@ -70,7 +51,7 @@ export function ExerciseCanvas({ patternKey }: { patternKey: string }) {
       <directionalLight position={[-2, 2, -1]} intensity={0.4} />
 
       <Suspense fallback={null}>
-        <Humanoid patternKey={patternKey} highlightSide={CATEGORY_BY_PATTERN[patternKey]} />
+        <MixamoCharacter patternKey={patternKey} />
         <ContactShadows position={[0, 0, 0]} opacity={0.35} scale={3} blur={2.2} far={2} />
       </Suspense>
 
