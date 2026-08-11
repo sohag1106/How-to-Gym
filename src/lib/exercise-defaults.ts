@@ -108,6 +108,16 @@ const DEFAULTS: Record<string, Defaults> = {
       "Lower back down with control.",
     ],
   },
+  leg_extension: {
+    sets: 3,
+    reps: 12,
+    restSeconds: 60,
+    instructions: [
+      "Sit with the pad resting on top of your ankles, back against the seat.",
+      "Extend your legs until straight, squeezing your quads at the top.",
+      "Lower back down with control, without letting the weight stack slam.",
+    ],
+  },
   squat: {
     sets: 4,
     reps: 8,
@@ -116,6 +126,16 @@ const DEFAULTS: Record<string, Defaults> = {
       "Stand with feet shoulder-width apart, bar/weight braced securely.",
       "Bend your knees and hips to lower down, keeping your chest up.",
       "Drive through your heels to stand back up.",
+    ],
+  },
+  deadlift: {
+    sets: 4,
+    reps: 6,
+    restSeconds: 120,
+    instructions: [
+      "Stand with feet hip-width apart, bar close to your shins, back flat.",
+      "Push your hips back and grip the bar, chest up.",
+      "Drive through your heels, keeping the bar close, to stand tall — then hinge back down with control.",
     ],
   },
   cardio_cycle: {

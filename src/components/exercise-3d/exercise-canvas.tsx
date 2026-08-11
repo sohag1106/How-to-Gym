@@ -16,6 +16,7 @@ const CATEGORY_BY_PATTERN: Record<string, "arms" | "legs" | "core"> = {
   tricep_dip: "arms",
   leg_press: "legs",
   leg_curl: "legs",
+  leg_extension: "legs",
   squat: "legs",
   deadlift: "legs",
   cardio_cycle: "legs",

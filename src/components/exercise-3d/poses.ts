@@ -75,6 +75,10 @@ const POSES: Record<string, PoseFn> = {
     const k = pp(t);
     return { ...NEUTRAL, spineX: 0.5, leftKnee: 1.7 * k, rightKnee: 1.7 * k, leftShoulderX: -0.4, rightShoulderX: -0.4 };
   },
+  leg_extension: (t) => {
+    const k = pp(t);
+    return { ...NEUTRAL, leftHipX: 1.3, rightHipX: 1.3, leftKnee: 1.5 - 1.4 * k, rightKnee: 1.5 - 1.4 * k, leftShoulderX: -0.2, rightShoulderX: -0.2, leftShoulderZ: 0.1, rightShoulderZ: -0.1, leftElbow: 0.3, rightElbow: 0.3 };
+  },
   squat: (t) => {
     const k = pp(t, 0.6);
     return { ...NEUTRAL, spineX: 0.25 * k, hipsY: -0.4 * k, leftHipX: 1.1 * k, rightHipX: 1.1 * k, leftKnee: 1.3 * k, rightKnee: 1.3 * k, leftShoulderX: -1.5, rightShoulderX: -1.5, leftShoulderZ: 0.35, rightShoulderZ: -0.35, leftElbow: 1.55, rightElbow: 1.55 };

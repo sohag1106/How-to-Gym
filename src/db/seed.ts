@@ -40,12 +40,19 @@ const MOVEMENT_PATTERNS = [
   { key: "tricep_dip", label: "Tricep Dip", animationClipKey: "tricep_dip" },
   { key: "leg_press", label: "Leg Press", animationClipKey: "leg_press" },
   { key: "leg_curl", label: "Leg Curl", animationClipKey: "leg_curl" },
+  { key: "leg_extension", label: "Leg Extension", animationClipKey: "leg_extension" },
   { key: "squat", label: "Squat", animationClipKey: "squat" },
   { key: "deadlift", label: "Deadlift", animationClipKey: "deadlift" },
   { key: "cardio_cycle", label: "Cycling", animationClipKey: "cardio_cycle" },
   { key: "cardio_run", label: "Running", animationClipKey: "cardio_run" },
   { key: "mobility_stretch", label: "Mobility & Stretch", animationClipKey: "mobility_stretch" },
 ] as const;
+
+// Templates whose name changed since the last seed run — renamed in place
+// rather than creating a duplicate row.
+const TEMPLATE_RENAMES: Record<string, string> = {
+  "Leg Curl Machine": "Leg Extension / Curl Machine",
+};
 
 // filename -> [equipment name, primary muscle group, primary movement pattern]
 const EQUIPMENT_TEMPLATES: [string, string, string, string][] = [
@@ -55,7 +62,7 @@ const EQUIPMENT_TEMPLATES: [string, string, string, string][] = [
   ["WhatsApp Image 2026-08-11 at 2.29.18 AM.jpeg", "Treadmill", "Cardio", "cardio_run"],
   ["WhatsApp Image 2026-08-11 at 2.29.18 AM (1).jpeg", "Preacher Curl Bench", "Arms", "bicep_curl"],
   ["WhatsApp Image 2026-08-11 at 2.29.18 AM (2).jpeg", "Smith Machine (Bench Press)", "Chest", "chest_press"],
-  ["WhatsApp Image 2026-08-11 at 2.29.19 AM.jpeg", "Leg Curl Machine", "Legs", "leg_curl"],
+  ["WhatsApp Image 2026-08-11 at 2.29.19 AM.jpeg", "Leg Extension / Curl Machine", "Legs", "leg_extension"],
   ["WhatsApp Image 2026-08-11 at 2.29.19 AM (1).jpeg", "Leg Press Machine", "Legs", "leg_press"],
   ["WhatsApp Image 2026-08-11 at 2.29.19 AM (2).jpeg", "Pull-Up Bar", "Back", "pull_up"],
   ["WhatsApp Image 2026-08-11 at 2.29.20 AM.jpeg", "Shoulder Press Machine", "Shoulders", "shoulder_press"],
@@ -69,22 +76,32 @@ const EQUIPMENT_TEMPLATES: [string, string, string, string][] = [
   ["WhatsApp Image 2026-08-11 at 2.29.22 AM (1).jpeg", "Squat Rack (Power Rack)", "Legs", "squat"],
 ];
 
-// One piece of equipment usually supports many exercises, not just one.
-// templateName -> [exercise name, muscle group, movement pattern][]
+// One piece of equipment usually supports many exercises, not just one —
+// and swapping attachments (handle, bar, rope, grip) often makes it a
+// genuinely different exercise. templateName -> [name, muscle group, pattern][]
 const TEMPLATE_EXERCISES: Record<string, [string, string, string][]> = {
   "Pec Deck / Chest Fly Machine": [
     ["Machine Chest Fly", "Chest", "chest_fly"],
+    ["Single-Arm Machine Chest Fly", "Chest", "chest_fly"],
     ["Reverse Fly (Rear Delts)", "Shoulders", "cable_row"],
   ],
   "Dumbbell Rack": [
     ["Dumbbell Bench Press", "Chest", "chest_press"],
+    ["Incline Dumbbell Press", "Chest", "chest_press"],
+    ["Dumbbell Fly", "Chest", "chest_fly"],
     ["Dumbbell Shoulder Press", "Shoulders", "shoulder_press"],
+    ["Dumbbell Lateral Raise", "Shoulders", "shoulder_press"],
+    ["Dumbbell Front Raise", "Shoulders", "shoulder_press"],
+    ["Dumbbell Shrug", "Shoulders", "shoulder_press"],
     ["Dumbbell Row", "Back", "cable_row"],
     ["Dumbbell Bicep Curl", "Arms", "bicep_curl"],
+    ["Dumbbell Hammer Curl", "Arms", "bicep_curl"],
+    ["Dumbbell Tricep Extension", "Arms", "tricep_dip"],
+    ["Dumbbell Tricep Kickback", "Arms", "tricep_dip"],
     ["Dumbbell Romanian Deadlift", "Legs", "deadlift"],
     ["Goblet Squat", "Legs", "squat"],
-    ["Dumbbell Lateral Raise", "Shoulders", "shoulder_press"],
-    ["Dumbbell Tricep Extension", "Arms", "tricep_dip"],
+    ["Dumbbell Walking Lunge", "Legs", "squat"],
+    ["Dumbbell Step-Up", "Legs", "squat"],
   ],
   "Exercise Bike": [
     ["Steady-State Cycling", "Cardio", "cardio_cycle"],
@@ -95,24 +112,41 @@ const TEMPLATE_EXERCISES: Record<string, [string, string, string][]> = {
     ["Incline Walk", "Cardio", "cardio_run"],
     ["Sprint Intervals", "Cardio", "cardio_run"],
   ],
-  "Preacher Curl Bench": [["Preacher Curl", "Arms", "bicep_curl"]],
+  "Preacher Curl Bench": [
+    ["Barbell Preacher Curl", "Arms", "bicep_curl"],
+    ["Dumbbell Preacher Curl", "Arms", "bicep_curl"],
+    ["EZ-Bar Preacher Curl", "Arms", "bicep_curl"],
+  ],
   "Smith Machine (Bench Press)": [
     ["Smith Machine Bench Press", "Chest", "chest_press"],
+    ["Smith Machine Incline Press", "Chest", "chest_press"],
     ["Smith Machine Squat", "Legs", "squat"],
+    ["Smith Machine Romanian Deadlift", "Legs", "deadlift"],
+    ["Smith Machine Lunge", "Legs", "squat"],
+    ["Smith Machine Calf Raise", "Legs", "squat"],
     ["Smith Machine Shoulder Press", "Shoulders", "shoulder_press"],
     ["Smith Machine Bent-Over Row", "Back", "cable_row"],
   ],
-  "Leg Curl Machine": [["Lying Leg Curl", "Legs", "leg_curl"]],
+  "Leg Extension / Curl Machine": [
+    ["Leg Extension", "Legs", "leg_extension"],
+    ["Seated Leg Curl", "Legs", "leg_curl"],
+  ],
   "Leg Press Machine": [
     ["Leg Press", "Legs", "leg_press"],
+    ["Single-Leg Press", "Legs", "leg_press"],
     ["Calf Press (on Leg Press)", "Legs", "leg_press"],
   ],
   "Pull-Up Bar": [
-    ["Pull-Up", "Back", "pull_up"],
-    ["Chin-Up", "Arms", "pull_up"],
+    ["Pull-Up (Wide Grip)", "Back", "pull_up"],
+    ["Chin-Up (Underhand)", "Arms", "pull_up"],
+    ["Neutral-Grip Pull-Up", "Back", "pull_up"],
     ["Hanging Knee Raise", "Core", "pull_up"],
+    ["Hanging Leg Raise", "Core", "pull_up"],
   ],
-  "Shoulder Press Machine": [["Machine Shoulder Press", "Shoulders", "shoulder_press"]],
+  "Shoulder Press Machine": [
+    ["Machine Shoulder Press", "Shoulders", "shoulder_press"],
+    ["Single-Arm Machine Shoulder Press", "Shoulders", "shoulder_press"],
+  ],
   "Dip Station": [
     ["Tricep Dip", "Arms", "tricep_dip"],
     ["Chest Dip", "Chest", "tricep_dip"],
@@ -120,43 +154,65 @@ const TEMPLATE_EXERCISES: Record<string, [string, string, string][]> = {
   ],
   "EZ Curl Bar": [
     ["EZ-Bar Bicep Curl", "Arms", "bicep_curl"],
+    ["EZ-Bar Reverse Curl", "Arms", "bicep_curl"],
     ["EZ-Bar Skull Crusher", "Arms", "tricep_dip"],
     ["EZ-Bar Upright Row", "Shoulders", "cable_row"],
   ],
   "Smart Workout Mirror": [
     ["Guided Mobility & Stretch", "Core", "mobility_stretch"],
     ["Guided Cardio Class", "Cardio", "cardio_run"],
+    ["Guided Strength Circuit", "Core", "mobility_stretch"],
   ],
   "Lat Pulldown Machine": [
-    ["Wide-Grip Lat Pulldown", "Back", "lat_pulldown"],
-    ["Close-Grip Lat Pulldown", "Back", "lat_pulldown"],
+    ["Wide-Grip Lat Pulldown (Bar)", "Back", "lat_pulldown"],
+    ["Close-Grip Lat Pulldown (V-Bar)", "Back", "lat_pulldown"],
+    ["Reverse-Grip Lat Pulldown", "Back", "lat_pulldown"],
+    ["Single-Arm Lat Pulldown", "Back", "lat_pulldown"],
+    ["Straight-Arm Pulldown", "Back", "lat_pulldown"],
   ],
   "Functional Trainer (Dual Cable)": [
     ["Cable Row", "Back", "cable_row"],
     ["Cable Chest Fly", "Chest", "chest_fly"],
-    ["Cable Tricep Pushdown", "Arms", "tricep_dip"],
-    ["Cable Bicep Curl", "Arms", "bicep_curl"],
-    ["Cable Lateral Raise", "Shoulders", "shoulder_press"],
+    ["Cable Crossover", "Chest", "chest_fly"],
+    ["Cable Straight-Arm Pulldown", "Back", "lat_pulldown"],
     ["Cable Face Pull", "Shoulders", "cable_row"],
+    ["Cable Lateral Raise", "Shoulders", "shoulder_press"],
+    ["Cable Tricep Pushdown (Rope)", "Arms", "tricep_dip"],
+    ["Cable Overhead Tricep Extension (Rope)", "Arms", "tricep_dip"],
+    ["Cable Bicep Curl", "Arms", "bicep_curl"],
+    ["Cable Woodchopper", "Core", "cable_row"],
+    ["Cable Pallof Press", "Core", "cable_row"],
+    ["Cable Glute Kickback", "Legs", "leg_curl"],
   ],
   "Adjustable Weight Bench": [
     ["Dumbbell Bench Press", "Chest", "chest_press"],
     ["Incline Dumbbell Press", "Chest", "chest_press"],
+    ["Decline Dumbbell Press", "Chest", "chest_press"],
+    ["Dumbbell Fly", "Chest", "chest_fly"],
     ["Seated Dumbbell Shoulder Press", "Shoulders", "shoulder_press"],
+    ["Single-Arm Dumbbell Row", "Back", "cable_row"],
     ["Bulgarian Split Squat", "Legs", "squat"],
+    ["Step-Ups", "Legs", "squat"],
   ],
   "Olympic Barbell": [
     ["Barbell Back Squat", "Legs", "squat"],
+    ["Barbell Front Squat", "Legs", "squat"],
     ["Barbell Deadlift", "Legs", "deadlift"],
+    ["Barbell Romanian Deadlift", "Legs", "deadlift"],
+    ["Barbell Hip Thrust", "Legs", "deadlift"],
     ["Barbell Bench Press", "Chest", "chest_press"],
+    ["Barbell Incline Bench Press", "Chest", "chest_press"],
     ["Barbell Bent-Over Row", "Back", "cable_row"],
     ["Barbell Overhead Press", "Shoulders", "shoulder_press"],
+    ["Barbell Shrug", "Shoulders", "shoulder_press"],
     ["Barbell Bicep Curl", "Arms", "bicep_curl"],
   ],
   "Squat Rack (Power Rack)": [
     ["Barbell Back Squat", "Legs", "squat"],
     ["Barbell Front Squat", "Legs", "squat"],
+    ["Pin Squat", "Legs", "squat"],
     ["Rack Pull (Partial Deadlift)", "Legs", "deadlift"],
+    ["Barbell Bench Press", "Chest", "chest_press"],
     ["Barbell Overhead Press", "Shoulders", "shoulder_press"],
   ],
 };
@@ -177,6 +233,20 @@ async function main() {
     .onConflictDoNothing({ target: schema.movementPatterns.key });
   const allPatterns = await db.select().from(schema.movementPatterns);
   const patternByKey = new Map(allPatterns.map((r) => [r.key, r.id]));
+
+  console.log("Renaming templates...");
+  const existingTemplates0 = await db.select().from(schema.equipmentTemplates);
+  const templateByName0 = new Map(existingTemplates0.map((r) => [r.name, r]));
+  for (const [oldName, newName] of Object.entries(TEMPLATE_RENAMES)) {
+    const old = templateByName0.get(oldName);
+    if (old && !templateByName0.has(newName)) {
+      await db
+        .update(schema.equipmentTemplates)
+        .set({ name: newName })
+        .where(eq(schema.equipmentTemplates.id, old.id));
+      console.log(`  renamed "${oldName}" -> "${newName}"`);
+    }
+  }
 
   console.log("Seeding equipment templates from Equipment Sample/...");
   const existingTemplates = await db.select().from(schema.equipmentTemplates);
@@ -201,6 +271,7 @@ async function main() {
   }
 
   console.log("Seeding possible exercises per equipment template...");
+  let total = 0;
   for (const [templateName, exerciseList] of Object.entries(TEMPLATE_EXERCISES)) {
     const template = templateByName.get(templateName);
     if (!template) {
@@ -213,6 +284,7 @@ async function main() {
       .where(eq(schema.templateExercises.equipmentTemplateId, template.id));
     const existingNames = new Set(existingExercises.map((e) => e.name));
 
+    let added = 0;
     for (let i = 0; i < exerciseList.length; i++) {
       const [name, muscleGroupName, patternKey] = exerciseList[i];
       if (existingNames.has(name)) continue;
@@ -235,11 +307,13 @@ async function main() {
         instructions: d.instructions,
         sortOrder: i,
       });
+      added++;
     }
-    console.log(`  ${templateName}: ${exerciseList.length} exercises`);
+    total += exerciseList.length;
+    console.log(`  ${templateName}: ${exerciseList.length} exercises (${added} new)`);
   }
 
-  console.log("Seed complete.");
+  console.log(`Seed complete. ${total} possible exercises defined across the catalog.`);
 }
 
 main()
