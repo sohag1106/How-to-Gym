@@ -29,8 +29,17 @@ const NEUTRAL: Pose = {
 };
 
 const osc = (t: number, freq = 1, phase = 0) => Math.sin((t * freq + phase) * Math.PI * 2);
-/** 0..1 ping-pong, eases both ends */
-const pp = (t: number, freq = 1, phase = 0) => (osc(t, freq, phase) + 1) / 2;
+/**
+ * 0..1 with a lifting tempo instead of a symmetric floaty oscillation:
+ * quicker on the way up (concentric), slower on the way down (eccentric),
+ * eased at both turnarounds — reads as a controlled rep, not a pendulum.
+ */
+const pp = (t: number, freq = 1, phase = 0) => {
+  const raw = (((t * freq + phase) % 1) + 1) % 1;
+  const upFraction = 0.42;
+  const k = raw < upFraction ? raw / upFraction : 1 - (raw - upFraction) / (1 - upFraction);
+  return k * k * (3 - 2 * k);
+};
 
 type PoseFn = (t: number) => Pose;
 
@@ -81,7 +90,7 @@ const POSES: Record<string, PoseFn> = {
   },
   squat: (t) => {
     const k = pp(t, 0.6);
-    return { ...NEUTRAL, spineX: 0.25 * k, hipsY: -0.4 * k, leftHipX: 1.1 * k, rightHipX: 1.1 * k, leftKnee: 1.3 * k, rightKnee: 1.3 * k, leftShoulderX: -1.5, rightShoulderX: -1.5, leftShoulderZ: 0.35, rightShoulderZ: -0.35, leftElbow: 1.55, rightElbow: 1.55 };
+    return { ...NEUTRAL, spineX: 0.25 * k, hipsY: -0.4 * k, leftHipX: 1.1 * k, rightHipX: 1.1 * k, leftKnee: 1.3 * k, rightKnee: 1.3 * k, leftShoulderX: -0.85, rightShoulderX: -0.85, leftShoulderZ: 0.55, rightShoulderZ: -0.55, leftElbow: 2.15, rightElbow: 2.15 };
   },
   deadlift: (t) => {
     const k = pp(t, 0.55);

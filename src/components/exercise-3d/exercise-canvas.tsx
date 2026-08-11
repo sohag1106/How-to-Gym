@@ -24,12 +24,39 @@ const CATEGORY_BY_PATTERN: Record<string, "arms" | "legs" | "core"> = {
   mobility_stretch: "core",
 };
 
+const DEFAULT_CAMERA: [number, number, number] = [1.6, 1.3, 2.2];
+const DEFAULT_TARGET: [number, number, number] = [0, 1.05, 0];
+
+// A 3/4 angle (not a pure side view) reads hip-hinge/knee-tracking exercises
+// well while keeping the bar visible instead of edge-on; front-ish angles
+// read bar-path/pulling exercises best. Everything else keeps the default.
+const CAMERA_BY_PATTERN: Record<string, [number, number, number]> = {
+  squat: [2.0, 1.15, 1.0],
+  deadlift: [2.0, 1.05, 1.0],
+  leg_press: [2.2, 1.05, 0.7],
+  leg_curl: [2.2, 1.05, 0.7],
+  leg_extension: [2.2, 1.05, 0.7],
+  lat_pulldown: [0.3, 1.3, 2.6],
+  pull_up: [0.5, 1.55, 3.2],
+  cable_row: [2.2, 1.15, 0.9],
+  chest_fly: [0.25, 1.3, 2.5],
+};
+
+// Overhead-reaching exercises need the orbit target raised so the bar and
+// hands stay in frame instead of getting cropped off the top.
+const TARGET_BY_PATTERN: Record<string, [number, number, number]> = {
+  pull_up: [0, 1.35, 0],
+};
+
 export function ExerciseCanvas({ patternKey }: { patternKey: string }) {
+  const cameraPosition = CAMERA_BY_PATTERN[patternKey] ?? DEFAULT_CAMERA;
+  const target = TARGET_BY_PATTERN[patternKey] ?? DEFAULT_TARGET;
+
   return (
     <Canvas
       shadows
       dpr={[1, 1.5]}
-      camera={{ position: [1.6, 1.3, 2.2], fov: 40 }}
+      camera={{ position: cameraPosition, fov: 40 }}
       gl={{ antialias: true }}
     >
       <color attach="background" args={["#00000000"]} />
@@ -54,7 +81,7 @@ export function ExerciseCanvas({ patternKey }: { patternKey: string }) {
         maxPolarAngle={Math.PI / 2.05}
         autoRotate
         autoRotateSpeed={1.4}
-        target={[0, 1.05, 0]}
+        target={target}
       />
     </Canvas>
   );
