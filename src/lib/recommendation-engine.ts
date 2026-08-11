@@ -352,18 +352,27 @@ export async function generateWorkoutPlan(userId: string) {
     const bonusFromRest = seededSort(eligible.filter(notPicked), `${userId}:${dayIndex}:bonus2`).filter(
       (e) => !bonusFromFocus.some((b) => b.id === e.id)
     );
-    const bonusCandidates = [...bonusFromFocus, ...bonusFromRest];
-    // Same equipment-diversity preference as the core picks above — favor
-    // spreading across different machines before repeating one.
+    // Exhaust the day's own focus pool completely — unique equipment first,
+    // then equipment repeats — before ever reaching into other muscle
+    // groups. Equipment diversity is a nice-to-have; staying on-focus is
+    // not (a member who dedicated the whole day to Back wants more back
+    // exercises, even repeating a machine, rather than a stray arm/core
+    // exercise pulled in just because it happens to use a fresh machine).
     const bonusPicks: EligibleExercise[] = [];
-    for (const ex of bonusCandidates) {
+    for (const ex of bonusFromFocus) {
       if (bonusPicks.length >= BONUS_COUNT) break;
       if (seenEquipment.has(ex.equipmentId)) continue;
       bonusPicks.push(ex);
       seenEquipment.add(ex.equipmentId);
     }
     if (bonusPicks.length < BONUS_COUNT) {
-      for (const ex of bonusCandidates) {
+      for (const ex of bonusFromFocus) {
+        if (bonusPicks.length >= BONUS_COUNT) break;
+        if (!bonusPicks.find((p) => p.id === ex.id)) bonusPicks.push(ex);
+      }
+    }
+    if (bonusPicks.length < BONUS_COUNT) {
+      for (const ex of bonusFromRest) {
         if (bonusPicks.length >= BONUS_COUNT) break;
         if (!bonusPicks.find((p) => p.id === ex.id)) bonusPicks.push(ex);
       }

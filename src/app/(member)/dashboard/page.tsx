@@ -36,6 +36,7 @@ export default async function DashboardPage() {
           isBonus: workoutDayExercises.isBonus,
           exerciseName: exercises.name,
           equipmentId: equipment.id,
+          equipmentName: equipment.name,
         })
         .from(workoutDayExercises)
         .innerJoin(exercises, eq(workoutDayExercises.exerciseId, exercises.id))
@@ -91,6 +92,7 @@ export default async function DashboardPage() {
                   />
                   <div className="min-w-0">
                     <p className="text-sm font-medium truncate">{ex.exerciseName}</p>
+                    <p className="text-xs text-muted-foreground truncate">{ex.equipmentName}</p>
                     <p className="text-xs text-muted-foreground">
                       {ex.sets} sets × {ex.reps} reps
                     </p>

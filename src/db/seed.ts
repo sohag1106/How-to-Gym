@@ -8,6 +8,7 @@ import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "./schema";
 import { defaultsForPattern } from "../lib/exercise-defaults";
+import { EXERCISE_INSTRUCTIONS } from "../lib/exercise-instructions";
 
 const sql = neon(process.env.DATABASE_URL!);
 const db = drizzle(sql, { schema });
@@ -304,7 +305,7 @@ async function main() {
         defaultReps: d.reps,
         defaultRestSeconds: d.restSeconds,
         difficulty: "beginner",
-        instructions: d.instructions,
+        instructions: EXERCISE_INSTRUCTIONS[name] ?? d.instructions,
         sortOrder: i,
       });
       added++;
