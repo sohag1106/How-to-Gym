@@ -1,3 +1,7 @@
+// Intentionally named `middleware.ts`, not Next 16's `proxy.ts` — the
+// OpenNext Cloudflare adapter doesn't yet detect the renamed convention
+// (opennextjs/opennextjs-cloudflare#962). Keep this filename until that's
+// fixed upstream, even though Next.js prints a deprecation warning.
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 

@@ -1,0 +1,5 @@
+# Local secrets for `wrangler dev` / `npm run cf:preview` (Workers runtime).
+# Copy to .dev.vars and fill in — same values as .env.local.
+DATABASE_URL=postgresql://user:password@host/dbname?sslmode=require
+CLERK_SECRET_KEY=
+CLERK_WEBHOOK_SIGNING_SECRET=
