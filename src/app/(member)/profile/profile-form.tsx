@@ -12,21 +12,35 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { DayFocusPicker, type DayFocusValue, type MuscleGroupOption } from "@/components/day-focus-picker";
 import { updateProfile } from "./actions";
 import type { OnboardingInput } from "@/app/onboarding/actions";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-export function ProfileForm({ profile }: { profile: OnboardingInput }) {
+export function ProfileForm({
+  profile,
+  muscleGroups,
+  initialDayFocus,
+}: {
+  profile: OnboardingInput;
+  muscleGroups: MuscleGroupOption[];
+  initialDayFocus: { dayIndex: number; muscleGroupId: string }[];
+}) {
   const [experienceLevel, setExperienceLevel] = useState(profile.experienceLevel);
   const [goal, setGoal] = useState(profile.goal);
   const [daysPerWeek, setDaysPerWeek] = useState(profile.daysPerWeek);
   const [splitPreference, setSplitPreference] = useState(profile.splitPreference);
   const [offDays, setOffDays] = useState<number[]>(profile.offDays);
+  const [dayFocus, setDayFocus] = useState<DayFocusValue>(
+    Object.fromEntries(initialDayFocus.map((d) => [d.dayIndex, d.muscleGroupId]))
+  );
   const [heightCm, setHeightCm] = useState(profile.heightCm ? String(profile.heightCm) : "");
   const [weightKg, setWeightKg] = useState(profile.weightKg ? String(profile.weightKg) : "");
   const [saved, setSaved] = useState(false);
   const [pending, startTransition] = useTransition();
+
+  const isCustom = splitPreference === "custom";
 
   function save() {
     setSaved(false);
@@ -34,11 +48,17 @@ export function ProfileForm({ profile }: { profile: OnboardingInput }) {
       await updateProfile({
         experienceLevel,
         goal,
-        daysPerWeek,
+        daysPerWeek: isCustom ? Math.max(2, Math.min(6, Object.keys(dayFocus).length)) : daysPerWeek,
         splitPreference,
-        offDays,
+        offDays: isCustom ? [] : offDays,
         heightCm: heightCm ? Number(heightCm) : null,
         weightKg: weightKg ? Number(weightKg) : null,
+        dayFocus: isCustom
+          ? Object.entries(dayFocus).map(([dayIndex, muscleGroupId]) => ({
+              dayIndex: Number(dayIndex),
+              muscleGroupId,
+            }))
+          : undefined,
       });
       setSaved(true);
     });
@@ -85,28 +105,63 @@ export function ProfileForm({ profile }: { profile: OnboardingInput }) {
             <SelectItem value="upper_lower">Upper / Lower</SelectItem>
             <SelectItem value="push_pull_legs">Push / Pull / Legs</SelectItem>
             <SelectItem value="bro_split">Body Part Split</SelectItem>
+            <SelectItem value="custom">Choose my own days</SelectItem>
           </SelectContent>
         </Select>
       </Field>
 
-      <Field label={`Days per week: ${daysPerWeek}`}>
-        <div className="flex gap-2">
-          {[2, 3, 4, 5, 6].map((d) => (
-            <button
-              key={d}
-              onClick={() => setDaysPerWeek(d)}
-              className={cn(
-                "size-10 rounded-full text-sm font-medium border transition-colors",
-                daysPerWeek === d
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "border-border hover:bg-accent"
-              )}
-            >
-              {d}
-            </button>
-          ))}
-        </div>
-      </Field>
+      {isCustom ? (
+        <Field label="Which day trains what?">
+          <DayFocusPicker muscleGroups={muscleGroups} value={dayFocus} onChange={setDayFocus} />
+        </Field>
+      ) : (
+        <>
+          <Field label={`Days per week: ${daysPerWeek}`}>
+            <div className="flex gap-2">
+              {[2, 3, 4, 5, 6].map((d) => (
+                <button
+                  key={d}
+                  onClick={() => setDaysPerWeek(d)}
+                  className={cn(
+                    "size-10 rounded-full text-sm font-medium border transition-colors",
+                    daysPerWeek === d
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "border-border hover:bg-accent"
+                  )}
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
+          </Field>
+
+          <Field label="Off days">
+            <div className="grid grid-cols-4 gap-2">
+              {WEEKDAYS.map((label, value) => {
+                const selected = offDays.includes(value);
+                return (
+                  <button
+                    key={value}
+                    onClick={() =>
+                      setOffDays((prev) =>
+                        selected ? prev.filter((v) => v !== value) : [...prev, value]
+                      )
+                    }
+                    className={cn(
+                      "h-11 rounded-xl border text-sm font-medium transition-colors",
+                      selected
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "border-border hover:bg-accent"
+                    )}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </Field>
+        </>
+      )}
 
       <div className="grid grid-cols-2 gap-3">
         <Field label="Height (cm)">
@@ -128,32 +183,6 @@ export function ProfileForm({ profile }: { profile: OnboardingInput }) {
           />
         </Field>
       </div>
-
-      <Field label="Off days">
-        <div className="grid grid-cols-4 gap-2">
-          {WEEKDAYS.map((label, value) => {
-            const selected = offDays.includes(value);
-            return (
-              <button
-                key={value}
-                onClick={() =>
-                  setOffDays((prev) =>
-                    selected ? prev.filter((v) => v !== value) : [...prev, value]
-                  )
-                }
-                className={cn(
-                  "h-11 rounded-xl border text-sm font-medium transition-colors",
-                  selected
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "border-border hover:bg-accent"
-                )}
-              >
-                {label}
-              </button>
-            );
-          })}
-        </div>
-      </Field>
 
       <Button onClick={save} disabled={pending} className="h-12 rounded-2xl mt-1">
         {pending ? "Saving & rebuilding plan..." : saved ? "Saved" : "Save changes"}

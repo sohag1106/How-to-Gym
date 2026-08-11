@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { gyms, memberProfiles } from "@/db/schema";
+import { gyms, memberDayFocus, memberProfiles, muscleGroups } from "@/db/schema";
 import { ensureAppUser } from "@/lib/auth";
 import { ProfileForm } from "./profile-form";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -11,11 +11,16 @@ export default async function ProfilePage() {
   const appUser = await ensureAppUser();
   if (!appUser) return null;
 
-  const [profile, gym] = await Promise.all([
+  const [profile, gym, allMuscleGroups, dayFocusRows] = await Promise.all([
     db.query.memberProfiles.findFirst({ where: eq(memberProfiles.userId, appUser.id) }),
     appUser.gymId
       ? db.query.gyms.findFirst({ where: eq(gyms.id, appUser.gymId) })
       : Promise.resolve(undefined),
+    db.select({ id: muscleGroups.id, name: muscleGroups.name }).from(muscleGroups).orderBy(asc(muscleGroups.sortOrder)),
+    db
+      .select({ dayIndex: memberDayFocus.dayIndex, muscleGroupId: memberDayFocus.muscleGroupId })
+      .from(memberDayFocus)
+      .where(eq(memberDayFocus.userId, appUser.id)),
   ]);
 
   return (
@@ -32,7 +37,9 @@ export default async function ProfilePage() {
         </div>
       </div>
 
-      {profile && <ProfileForm profile={profile} />}
+      {profile && (
+        <ProfileForm profile={profile} muscleGroups={allMuscleGroups} initialDayFocus={dayFocusRows} />
+      )}
 
       <SignOutButton>
         <Button variant="outline" className="rounded-2xl h-12">

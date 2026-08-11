@@ -1,0 +1,1616 @@
+{
+  "id": "56256a8c-70a6-4a3b-aa51-b0c76b0256b2",
+  "prevId": "81404217-55ab-43d4-8083-ae76a739c963",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.equipment": {
+      "name": "equipment",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "gym_id": {
+          "name": "gym_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "template_id": {
+          "name": "template_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "image_data": {
+          "name": "image_data",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "muscle_group_id": {
+          "name": "muscle_group_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "movement_pattern_id": {
+          "name": "movement_pattern_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "added_by_user_id": {
+          "name": "added_by_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "equipment_gym_id_gyms_id_fk": {
+          "name": "equipment_gym_id_gyms_id_fk",
+          "tableFrom": "equipment",
+          "tableTo": "gyms",
+          "columnsFrom": [
+            "gym_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "equipment_template_id_equipment_templates_id_fk": {
+          "name": "equipment_template_id_equipment_templates_id_fk",
+          "tableFrom": "equipment",
+          "tableTo": "equipment_templates",
+          "columnsFrom": [
+            "template_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "equipment_muscle_group_id_muscle_groups_id_fk": {
+          "name": "equipment_muscle_group_id_muscle_groups_id_fk",
+          "tableFrom": "equipment",
+          "tableTo": "muscle_groups",
+          "columnsFrom": [
+            "muscle_group_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "equipment_movement_pattern_id_movement_patterns_id_fk": {
+          "name": "equipment_movement_pattern_id_movement_patterns_id_fk",
+          "tableFrom": "equipment",
+          "tableTo": "movement_patterns",
+          "columnsFrom": [
+            "movement_pattern_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "equipment_added_by_user_id_users_id_fk": {
+          "name": "equipment_added_by_user_id_users_id_fk",
+          "tableFrom": "equipment",
+          "tableTo": "users",
+          "columnsFrom": [
+            "added_by_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.equipment_templates": {
+      "name": "equipment_templates",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "image_data": {
+          "name": "image_data",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "muscle_group_id": {
+          "name": "muscle_group_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "movement_pattern_id": {
+          "name": "movement_pattern_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "equipment_templates_muscle_group_id_muscle_groups_id_fk": {
+          "name": "equipment_templates_muscle_group_id_muscle_groups_id_fk",
+          "tableFrom": "equipment_templates",
+          "tableTo": "muscle_groups",
+          "columnsFrom": [
+            "muscle_group_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "equipment_templates_movement_pattern_id_movement_patterns_id_fk": {
+          "name": "equipment_templates_movement_pattern_id_movement_patterns_id_fk",
+          "tableFrom": "equipment_templates",
+          "tableTo": "movement_patterns",
+          "columnsFrom": [
+            "movement_pattern_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.exercise_demos": {
+      "name": "exercise_demos",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "source_name": {
+          "name": "source_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "image_start": {
+          "name": "image_start",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "image_end": {
+          "name": "image_end",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.exercises": {
+      "name": "exercises",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "equipment_id": {
+          "name": "equipment_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_template_exercise_id": {
+          "name": "source_template_exercise_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "movement_pattern_id": {
+          "name": "movement_pattern_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "exercise_demo_id": {
+          "name": "exercise_demo_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "default_sets": {
+          "name": "default_sets",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 3
+        },
+        "default_reps": {
+          "name": "default_reps",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 10
+        },
+        "default_rest_seconds": {
+          "name": "default_rest_seconds",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 60
+        },
+        "difficulty": {
+          "name": "difficulty",
+          "type": "difficulty",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'beginner'"
+        },
+        "instructions": {
+          "name": "instructions",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "exercises_equipment_id_equipment_id_fk": {
+          "name": "exercises_equipment_id_equipment_id_fk",
+          "tableFrom": "exercises",
+          "tableTo": "equipment",
+          "columnsFrom": [
+            "equipment_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "exercises_source_template_exercise_id_template_exercises_id_fk": {
+          "name": "exercises_source_template_exercise_id_template_exercises_id_fk",
+          "tableFrom": "exercises",
+          "tableTo": "template_exercises",
+          "columnsFrom": [
+            "source_template_exercise_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "exercises_movement_pattern_id_movement_patterns_id_fk": {
+          "name": "exercises_movement_pattern_id_movement_patterns_id_fk",
+          "tableFrom": "exercises",
+          "tableTo": "movement_patterns",
+          "columnsFrom": [
+            "movement_pattern_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "exercises_exercise_demo_id_exercise_demos_id_fk": {
+          "name": "exercises_exercise_demo_id_exercise_demos_id_fk",
+          "tableFrom": "exercises",
+          "tableTo": "exercise_demos",
+          "columnsFrom": [
+            "exercise_demo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.gyms": {
+      "name": "gyms",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "owner_name": {
+          "name": "owner_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "owner_email": {
+          "name": "owner_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "owner_phone": {
+          "name": "owner_phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "member_limit": {
+          "name": "member_limit",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 50
+        },
+        "active": {
+          "name": "active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_by_super_admin_id": {
+          "name": "created_by_super_admin_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "invitation_id": {
+          "name": "invitation_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "invitation_url": {
+          "name": "invitation_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.member_day_focus": {
+      "name": "member_day_focus",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "day_index": {
+          "name": "day_index",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "muscle_group_id": {
+          "name": "muscle_group_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "member_day_focus_user_day_idx": {
+          "name": "member_day_focus_user_day_idx",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "day_index",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "member_day_focus_user_id_users_id_fk": {
+          "name": "member_day_focus_user_id_users_id_fk",
+          "tableFrom": "member_day_focus",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "member_day_focus_muscle_group_id_muscle_groups_id_fk": {
+          "name": "member_day_focus_muscle_group_id_muscle_groups_id_fk",
+          "tableFrom": "member_day_focus",
+          "tableTo": "muscle_groups",
+          "columnsFrom": [
+            "muscle_group_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.member_exercise_rules": {
+      "name": "member_exercise_rules",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "gym_id": {
+          "name": "gym_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "member_id": {
+          "name": "member_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "exercise_id": {
+          "name": "exercise_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "exercise_rule_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "set_by_user_id": {
+          "name": "set_by_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "member_exercise_rules_gym_id_gyms_id_fk": {
+          "name": "member_exercise_rules_gym_id_gyms_id_fk",
+          "tableFrom": "member_exercise_rules",
+          "tableTo": "gyms",
+          "columnsFrom": [
+            "gym_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "member_exercise_rules_member_id_users_id_fk": {
+          "name": "member_exercise_rules_member_id_users_id_fk",
+          "tableFrom": "member_exercise_rules",
+          "tableTo": "users",
+          "columnsFrom": [
+            "member_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "member_exercise_rules_exercise_id_exercises_id_fk": {
+          "name": "member_exercise_rules_exercise_id_exercises_id_fk",
+          "tableFrom": "member_exercise_rules",
+          "tableTo": "exercises",
+          "columnsFrom": [
+            "exercise_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "member_exercise_rules_set_by_user_id_users_id_fk": {
+          "name": "member_exercise_rules_set_by_user_id_users_id_fk",
+          "tableFrom": "member_exercise_rules",
+          "tableTo": "users",
+          "columnsFrom": [
+            "set_by_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.member_profiles": {
+      "name": "member_profiles",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "experience_level": {
+          "name": "experience_level",
+          "type": "experience_level",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "goal": {
+          "name": "goal",
+          "type": "goal",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "days_per_week": {
+          "name": "days_per_week",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "split_preference": {
+          "name": "split_preference",
+          "type": "split_preference",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "off_days": {
+          "name": "off_days",
+          "type": "integer[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "height_cm": {
+          "name": "height_cm",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "weight_kg": {
+          "name": "weight_kg",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "member_profiles_user_id_users_id_fk": {
+          "name": "member_profiles_user_id_users_id_fk",
+          "tableFrom": "member_profiles",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.movement_patterns": {
+      "name": "movement_patterns",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "key": {
+          "name": "key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "label": {
+          "name": "label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "animation_clip_key": {
+          "name": "animation_clip_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "movement_patterns_key_unique": {
+          "name": "movement_patterns_key_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "key"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.muscle_groups": {
+      "name": "muscle_groups",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sort_order": {
+          "name": "sort_order",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "muscle_groups_name_unique": {
+          "name": "muscle_groups_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.template_exercises": {
+      "name": "template_exercises",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "equipment_template_id": {
+          "name": "equipment_template_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "muscle_group_id": {
+          "name": "muscle_group_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "movement_pattern_id": {
+          "name": "movement_pattern_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "exercise_demo_id": {
+          "name": "exercise_demo_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "default_sets": {
+          "name": "default_sets",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 3
+        },
+        "default_reps": {
+          "name": "default_reps",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 10
+        },
+        "default_rest_seconds": {
+          "name": "default_rest_seconds",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 60
+        },
+        "difficulty": {
+          "name": "difficulty",
+          "type": "difficulty",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'beginner'"
+        },
+        "instructions": {
+          "name": "instructions",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "sort_order": {
+          "name": "sort_order",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "template_exercises_equipment_template_id_equipment_templates_id_fk": {
+          "name": "template_exercises_equipment_template_id_equipment_templates_id_fk",
+          "tableFrom": "template_exercises",
+          "tableTo": "equipment_templates",
+          "columnsFrom": [
+            "equipment_template_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "template_exercises_muscle_group_id_muscle_groups_id_fk": {
+          "name": "template_exercises_muscle_group_id_muscle_groups_id_fk",
+          "tableFrom": "template_exercises",
+          "tableTo": "muscle_groups",
+          "columnsFrom": [
+            "muscle_group_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "template_exercises_movement_pattern_id_movement_patterns_id_fk": {
+          "name": "template_exercises_movement_pattern_id_movement_patterns_id_fk",
+          "tableFrom": "template_exercises",
+          "tableTo": "movement_patterns",
+          "columnsFrom": [
+            "movement_pattern_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "template_exercises_exercise_demo_id_exercise_demos_id_fk": {
+          "name": "template_exercises_exercise_demo_id_exercise_demos_id_fk",
+          "tableFrom": "template_exercises",
+          "tableTo": "exercise_demos",
+          "columnsFrom": [
+            "exercise_demo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.users": {
+      "name": "users",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "clerk_id": {
+          "name": "clerk_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "user_role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'member'"
+        },
+        "gym_id": {
+          "name": "gym_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "phone": {
+          "name": "phone",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "user_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "approved_by_user_id": {
+          "name": "approved_by_user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "approved_at": {
+          "name": "approved_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "users_gym_id_gyms_id_fk": {
+          "name": "users_gym_id_gyms_id_fk",
+          "tableFrom": "users",
+          "tableTo": "gyms",
+          "columnsFrom": [
+            "gym_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "users_clerk_id_unique": {
+          "name": "users_clerk_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "clerk_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.workout_day_exercises": {
+      "name": "workout_day_exercises",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "workout_day_id": {
+          "name": "workout_day_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "exercise_id": {
+          "name": "exercise_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "order": {
+          "name": "order",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sets": {
+          "name": "sets",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reps": {
+          "name": "reps",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rest_seconds": {
+          "name": "rest_seconds",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "est_minutes": {
+          "name": "est_minutes",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_bonus": {
+          "name": "is_bonus",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "workout_day_exercises_workout_day_id_workout_days_id_fk": {
+          "name": "workout_day_exercises_workout_day_id_workout_days_id_fk",
+          "tableFrom": "workout_day_exercises",
+          "tableTo": "workout_days",
+          "columnsFrom": [
+            "workout_day_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "workout_day_exercises_exercise_id_exercises_id_fk": {
+          "name": "workout_day_exercises_exercise_id_exercises_id_fk",
+          "tableFrom": "workout_day_exercises",
+          "tableTo": "exercises",
+          "columnsFrom": [
+            "exercise_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.workout_days": {
+      "name": "workout_days",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "plan_id": {
+          "name": "plan_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "day_index": {
+          "name": "day_index",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "focus_label": {
+          "name": "focus_label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_rest_day": {
+          "name": "is_rest_day",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "workout_days_plan_id_workout_plans_id_fk": {
+          "name": "workout_days_plan_id_workout_plans_id_fk",
+          "tableFrom": "workout_days",
+          "tableTo": "workout_plans",
+          "columnsFrom": [
+            "plan_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.workout_plans": {
+      "name": "workout_plans",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "gym_id": {
+          "name": "gym_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "split_type": {
+          "name": "split_type",
+          "type": "split_preference",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "active": {
+          "name": "active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "generated_at": {
+          "name": "generated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "workout_plans_user_id_users_id_fk": {
+          "name": "workout_plans_user_id_users_id_fk",
+          "tableFrom": "workout_plans",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "workout_plans_gym_id_gyms_id_fk": {
+          "name": "workout_plans_gym_id_gyms_id_fk",
+          "tableFrom": "workout_plans",
+          "tableTo": "gyms",
+          "columnsFrom": [
+            "gym_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.workout_session_exercises": {
+      "name": "workout_session_exercises",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "session_id": {
+          "name": "session_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "exercise_id": {
+          "name": "exercise_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "order": {
+          "name": "order",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sets": {
+          "name": "sets",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "reps": {
+          "name": "reps",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "session_exercise_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "workout_session_exercises_session_id_workout_sessions_id_fk": {
+          "name": "workout_session_exercises_session_id_workout_sessions_id_fk",
+          "tableFrom": "workout_session_exercises",
+          "tableTo": "workout_sessions",
+          "columnsFrom": [
+            "session_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "workout_session_exercises_exercise_id_exercises_id_fk": {
+          "name": "workout_session_exercises_exercise_id_exercises_id_fk",
+          "tableFrom": "workout_session_exercises",
+          "tableTo": "exercises",
+          "columnsFrom": [
+            "exercise_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.workout_sessions": {
+      "name": "workout_sessions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "workout_day_id": {
+          "name": "workout_day_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "date": {
+          "name": "date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "available_minutes": {
+          "name": "available_minutes",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "workout_sessions_user_id_users_id_fk": {
+          "name": "workout_sessions_user_id_users_id_fk",
+          "tableFrom": "workout_sessions",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "workout_sessions_workout_day_id_workout_days_id_fk": {
+          "name": "workout_sessions_workout_day_id_workout_days_id_fk",
+          "tableFrom": "workout_sessions",
+          "tableTo": "workout_days",
+          "columnsFrom": [
+            "workout_day_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.difficulty": {
+      "name": "difficulty",
+      "schema": "public",
+      "values": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ]
+    },
+    "public.exercise_rule_type": {
+      "name": "exercise_rule_type",
+      "schema": "public",
+      "values": [
+        "assigned",
+        "blocked"
+      ]
+    },
+    "public.experience_level": {
+      "name": "experience_level",
+      "schema": "public",
+      "values": [
+        "beginner",
+        "intermediate",
+        "advanced"
+      ]
+    },
+    "public.goal": {
+      "name": "goal",
+      "schema": "public",
+      "values": [
+        "muscle_gain",
+        "fat_loss",
+        "general_fitness",
+        "strength"
+      ]
+    },
+    "public.session_exercise_status": {
+      "name": "session_exercise_status",
+      "schema": "public",
+      "values": [
+        "pending",
+        "done",
+        "skipped"
+      ]
+    },
+    "public.split_preference": {
+      "name": "split_preference",
+      "schema": "public",
+      "values": [
+        "mixed_full_body",
+        "upper_lower",
+        "push_pull_legs",
+        "bro_split",
+        "custom"
+      ]
+    },
+    "public.user_role": {
+      "name": "user_role",
+      "schema": "public",
+      "values": [
+        "super_admin",
+        "gym_owner",
+        "member"
+      ]
+    },
+    "public.user_status": {
+      "name": "user_status",
+      "schema": "public",
+      "values": [
+        "pending",
+        "approved",
+        "rejected"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

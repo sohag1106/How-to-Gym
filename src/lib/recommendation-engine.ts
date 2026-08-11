@@ -5,9 +5,11 @@ import { db } from "@/db";
 import {
   equipment,
   exercises,
+  memberDayFocus,
   memberExerciseRules,
   memberProfiles,
   movementPatterns,
+  muscleGroups,
   users,
   workoutDayExercises,
   workoutDays,
@@ -17,6 +19,7 @@ import {
 } from "@/db/schema";
 
 const equipmentMovementPatterns = alias(movementPatterns, "equipment_movement_patterns");
+const equipmentMuscleGroups = alias(muscleGroups, "equipment_muscle_groups");
 
 type Goal = (typeof goalEnum.enumValues)[number];
 type SplitPreference = (typeof splitPreferenceEnum.enumValues)[number];
@@ -74,6 +77,11 @@ type EligibleExercise = {
 };
 
 type DayTemplate = { label: string; categories: Category[]; count: number };
+
+/** A resolved day plan, unifying the category-based split styles with the
+ * "custom" per-day muscle-group assignment under one shape the scheduling
+ * loop can use without caring which mode produced it. */
+type DayPlan = { label: string; count: number; matches: (e: EligibleExercise) => boolean };
 
 function focusTemplates(split: SplitPreference, exerciseBudget: number): DayTemplate[] {
   switch (split) {
@@ -172,7 +180,8 @@ export async function generateWorkoutPlan(userId: string) {
       id: exercises.id,
       name: exercises.name,
       equipmentId: exercises.equipmentId,
-      muscleGroupId: equipment.muscleGroupId,
+      exerciseMuscleGroupId: exercises.muscleGroupId,
+      equipmentMuscleGroupId: equipmentMuscleGroups.id,
       exercisePatternKey: movementPatterns.key,
       equipmentPatternKey: equipmentMovementPatterns.key,
       defaultSets: exercises.defaultSets,
@@ -182,16 +191,19 @@ export async function generateWorkoutPlan(userId: string) {
     .from(exercises)
     .innerJoin(equipment, eq(exercises.equipmentId, equipment.id))
     .innerJoin(equipmentMovementPatterns, eq(equipment.movementPatternId, equipmentMovementPatterns.id))
+    .innerJoin(equipmentMuscleGroups, eq(equipment.muscleGroupId, equipmentMuscleGroups.id))
     .leftJoin(movementPatterns, eq(exercises.movementPatternId, movementPatterns.id))
     .where(eq(equipment.gymId, member.gymId));
 
-  // Each exercise on a piece of equipment can be a different movement than
-  // the equipment's own default (a squat rack also does bench press, rack
-  // pulls, overhead press) — prefer the exercise's own pattern and only
-  // fall back to the equipment's for rows predating that column.
+  // Each exercise on a piece of equipment can be a different movement (and
+  // target a different muscle group) than the equipment's own default — a
+  // squat rack also does bench press, rack pulls, overhead press. Prefer
+  // the exercise's own pattern/muscle group and only fall back to the
+  // equipment's for rows predating those columns.
   const gymExercises = gymExercisesRaw.map((e) => ({
     ...e,
     patternKey: e.exercisePatternKey ?? e.equipmentPatternKey,
+    muscleGroupId: e.exerciseMuscleGroupId ?? e.equipmentMuscleGroupId,
   }));
 
   const rules = await db
@@ -218,13 +230,40 @@ export async function generateWorkoutPlan(userId: string) {
     }));
 
   const budget = exerciseBudgetFor(profile.experienceLevel);
-  const templates = focusTemplates(profile.splitPreference, budget);
 
-  // Which weekdays (0=Mon..6=Sun) are training days, in order.
-  const offDaySet = new Set(profile.offDays);
-  const candidateDays = [0, 1, 2, 3, 4, 5, 6].filter((d) => !offDaySet.has(d));
-  const trainingDays = candidateDays.slice(0, Math.min(profile.daysPerWeek, candidateDays.length));
-  const trainingDaySet = new Set(trainingDays);
+  // The "custom" split replaces daysPerWeek/offDays/category-rotation
+  // entirely with an explicit member-chosen day -> muscle group mapping
+  // (e.g. "Monday = Legs, Wednesday = Chest") — every other split style
+  // keeps the existing rotate-through-categories scheduling.
+  const dayPlanByIndex = new Map<number, DayPlan>();
+  if (profile.splitPreference === "custom") {
+    const focusRows = await db.query.memberDayFocus.findMany({
+      where: eq(memberDayFocus.userId, userId),
+      with: { muscleGroup: true },
+    });
+    for (const row of focusRows) {
+      dayPlanByIndex.set(row.dayIndex, {
+        label: row.muscleGroup.name,
+        count: budget,
+        matches: (e) => e.muscleGroupId === row.muscleGroupId,
+      });
+    }
+  } else {
+    const templates = focusTemplates(profile.splitPreference, budget);
+    const offDaySet = new Set(profile.offDays);
+    const candidateDays = [0, 1, 2, 3, 4, 5, 6].filter((d) => !offDaySet.has(d));
+    const trainingDays = candidateDays.slice(0, Math.min(profile.daysPerWeek, candidateDays.length));
+    let templateIndex = 0;
+    for (const dayIndex of trainingDays) {
+      const template = templates[templateIndex % templates.length];
+      templateIndex++;
+      dayPlanByIndex.set(dayIndex, {
+        label: template.label,
+        count: template.count,
+        matches: (e) => template.categories.includes(e.category),
+      });
+    }
+  }
 
   // Deactivate any existing active plan.
   const existingActive = await db.query.workoutPlans.findFirst({
@@ -248,43 +287,40 @@ export async function generateWorkoutPlan(userId: string) {
   // days' worth of one-row-at-a-time inserts started blowing past
   // Cloudflare Workers' subrequest limit. Collect everything and issue one
   // batched insert per table instead.
-  let templateIndex = 0;
   const dayInserts: (typeof workoutDays.$inferInsert)[] = [];
-  const dayMeta: { dayIndex: number; template: DayTemplate | null }[] = [];
+  const dayMeta: { dayIndex: number; dayPlan: DayPlan | null }[] = [];
   for (let dayIndex = 0; dayIndex <= 6; dayIndex++) {
-    const isTrainingDay = trainingDaySet.has(dayIndex);
-    const template = isTrainingDay ? templates[templateIndex % templates.length] : null;
-    if (isTrainingDay) templateIndex++;
+    const dayPlan = dayPlanByIndex.get(dayIndex) ?? null;
     dayInserts.push({
       planId: plan.id,
       dayIndex,
-      focusLabel: template ? template.label : "Rest",
-      isRestDay: !isTrainingDay,
+      focusLabel: dayPlan ? dayPlan.label : "Rest",
+      isRestDay: !dayPlan,
     });
-    dayMeta.push({ dayIndex, template });
+    dayMeta.push({ dayIndex, dayPlan });
   }
   const insertedDays = await db.insert(workoutDays).values(dayInserts).returning();
 
   const exerciseRows: (typeof workoutDayExercises.$inferInsert)[] = [];
   for (let i = 0; i < insertedDays.length; i++) {
     const day = insertedDays[i];
-    const { dayIndex, template } = dayMeta[i];
-    if (!template) continue;
+    const { dayIndex, dayPlan } = dayMeta[i];
+    if (!dayPlan) continue;
 
-    const pool = eligible.filter((e) => template.categories.includes(e.category));
+    const pool = eligible.filter(dayPlan.matches);
     const shuffled = seededSort(pool, `${userId}:${dayIndex}`);
     const picks: EligibleExercise[] = [];
     const seenEquipment = new Set<string>();
     for (const ex of shuffled) {
-      if (picks.length >= template.count) break;
+      if (picks.length >= dayPlan.count) break;
       if (seenEquipment.has(ex.equipmentId)) continue;
       picks.push(ex);
       seenEquipment.add(ex.equipmentId);
     }
     // If we couldn't fill the budget with unique equipment, allow repeats from the pool.
-    if (picks.length < template.count) {
+    if (picks.length < dayPlan.count) {
       for (const ex of shuffled) {
-        if (picks.length >= template.count) break;
+        if (picks.length >= dayPlan.count) break;
         if (!picks.find((p) => p.id === ex.id)) picks.push(ex);
       }
     }
@@ -295,9 +331,11 @@ export async function generateWorkoutPlan(userId: string) {
 
     // A short cardio finisher on every training day, if the gym has any
     // cardio equipment — the split templates above are strength-only, so
-    // cardio would otherwise never get scheduled at all.
+    // cardio would otherwise never get scheduled at all. (Guarded against
+    // the core picks already containing a cardio exercise, which can
+    // happen in "custom" mode if a member dedicates the day to Cardio.)
     const cardioPool = seededSort(
-      eligible.filter((e) => e.category === "cardio"),
+      eligible.filter((e) => e.category === "cardio" && !picks.some((p) => p.id === e.id)),
       `${userId}:${dayIndex}:cardio`
     );
     const cardioFinisher = cardioPool[0];

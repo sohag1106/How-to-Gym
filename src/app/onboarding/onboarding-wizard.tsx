@@ -7,10 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { DayFocusPicker, type DayFocusValue, type MuscleGroupOption } from "@/components/day-focus-picker";
 import { submitOnboarding, type OnboardingInput } from "./actions";
 
-const STEPS = ["experience", "stats", "goal", "days", "offDays", "split"] as const;
-type Step = (typeof STEPS)[number];
+type Step = "experience" | "stats" | "goal" | "split" | "days" | "offDays" | "dayFocus";
 
 const WEEKDAYS = [
   { value: 0, label: "Mon" },
@@ -56,9 +56,14 @@ const SPLIT_OPTIONS = [
     title: "Body Part Split",
     body: "One muscle group a day. More volume per group, needs more days.",
   },
+  {
+    value: "custom",
+    title: "Choose my own days",
+    body: "Pick exactly which body part you train on which day of the week.",
+  },
 ] as const;
 
-export function OnboardingWizard() {
+export function OnboardingWizard({ muscleGroups }: { muscleGroups: MuscleGroupOption[] }) {
   const [stepIndex, setStepIndex] = useState(0);
   const [experienceLevel, setExperienceLevel] =
     useState<OnboardingInput["experienceLevel"]>("beginner");
@@ -67,24 +72,38 @@ export function OnboardingWizard() {
   const [offDays, setOffDays] = useState<number[]>([5, 6]);
   const [splitPreference, setSplitPreference] =
     useState<OnboardingInput["splitPreference"]>("mixed_full_body");
+  const [dayFocus, setDayFocus] = useState<DayFocusValue>({});
   const [heightCm, setHeightCm] = useState("");
   const [weightKg, setWeightKg] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
-  const step: Step = STEPS[stepIndex];
-  const progress = ((stepIndex + 1) / STEPS.length) * 100;
+  const isCustom = splitPreference === "custom";
+  const steps = useMemo<Step[]>(
+    () => [
+      "experience",
+      "stats",
+      "goal",
+      "split",
+      ...(isCustom ? (["dayFocus"] as const) : (["days", "offDays"] as const)),
+    ],
+    [isCustom]
+  );
+
+  const step: Step = steps[stepIndex];
+  const progress = ((stepIndex + 1) / steps.length) * 100;
 
   const recommendedSplit =
     experienceLevel === "beginner" ? "mixed_full_body" : undefined;
 
   const canGoNext = useMemo(() => {
     if (step === "offDays") return offDays.length < 7;
+    if (step === "dayFocus") return Object.keys(dayFocus).length > 0;
     return true;
-  }, [step, offDays]);
+  }, [step, offDays, dayFocus]);
 
   function next() {
-    if (stepIndex < STEPS.length - 1) setStepIndex((i) => i + 1);
+    if (stepIndex < steps.length - 1) setStepIndex((i) => i + 1);
     else submit();
   }
 
@@ -98,11 +117,20 @@ export function OnboardingWizard() {
       const res = await submitOnboarding({
         experienceLevel,
         goal,
-        daysPerWeek,
+        // daysPerWeek/offDays aren't used by the scheduler in custom mode
+        // (the day -> muscle group map fully determines training days) but
+        // the field still has to pass the same min/max validation.
+        daysPerWeek: isCustom ? Math.max(2, Math.min(6, Object.keys(dayFocus).length)) : daysPerWeek,
         splitPreference,
-        offDays,
+        offDays: isCustom ? [] : offDays,
         heightCm: heightCm ? Number(heightCm) : null,
         weightKg: weightKg ? Number(weightKg) : null,
+        dayFocus: isCustom
+          ? Object.entries(dayFocus).map(([dayIndex, muscleGroupId]) => ({
+              dayIndex: Number(dayIndex),
+              muscleGroupId,
+            }))
+          : undefined,
       });
       if (res?.error) setError(res.error);
     });
@@ -253,6 +281,15 @@ export function OnboardingWizard() {
             ))}
           </StepShell>
         )}
+
+        {step === "dayFocus" && (
+          <StepShell
+            title="Which day trains what?"
+            subtitle="Assign a body part to each day you want to train — leave the rest as Rest."
+          >
+            <DayFocusPicker muscleGroups={muscleGroups} value={dayFocus} onChange={setDayFocus} />
+          </StepShell>
+        )}
       </div>
 
       {error && <p className="text-sm text-destructive mb-3">{error}</p>}
@@ -265,7 +302,7 @@ export function OnboardingWizard() {
       >
         {pending ? (
           "Building your plan..."
-        ) : step === "split" ? (
+        ) : stepIndex === steps.length - 1 ? (
           <>
             <Sparkles className="size-4" />
             Build my plan

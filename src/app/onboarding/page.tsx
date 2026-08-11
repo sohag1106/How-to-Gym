@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
-import { eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { memberProfiles } from "@/db/schema";
+import { memberProfiles, muscleGroups } from "@/db/schema";
 import { ensureAppUser } from "@/lib/auth";
 import { OnboardingWizard } from "./onboarding-wizard";
 
@@ -16,9 +16,14 @@ export default async function OnboardingPage() {
   });
   if (existing) redirect("/dashboard");
 
+  const allMuscleGroups = await db
+    .select({ id: muscleGroups.id, name: muscleGroups.name })
+    .from(muscleGroups)
+    .orderBy(asc(muscleGroups.sortOrder));
+
   return (
     <main className="min-h-dvh flex flex-col px-6 py-8 max-w-md mx-auto w-full">
-      <OnboardingWizard />
+      <OnboardingWizard muscleGroups={allMuscleGroups} />
     </main>
   );
 }

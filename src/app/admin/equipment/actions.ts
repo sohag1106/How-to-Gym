@@ -12,7 +12,8 @@ import { addTemplateToGym } from "@/lib/gym-catalog";
 async function createDefaultExercise(
   equipmentId: string,
   name: string,
-  movementPatternId: string
+  movementPatternId: string,
+  muscleGroupId: string
 ) {
   const [pattern] = await db
     .select()
@@ -24,6 +25,7 @@ async function createDefaultExercise(
     equipmentId,
     name,
     movementPatternId,
+    muscleGroupId,
     defaultSets: d.sets,
     defaultReps: d.reps,
     defaultRestSeconds: d.restSeconds,
@@ -95,7 +97,7 @@ export async function createCustomEquipment(
     })
     .returning();
 
-  await createDefaultExercise(created.id, created.name, created.movementPatternId);
+  await createDefaultExercise(created.id, created.name, created.movementPatternId, created.muscleGroupId);
 
   revalidatePath("/admin/equipment");
   return { success: true };

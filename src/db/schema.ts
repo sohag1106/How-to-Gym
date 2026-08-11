@@ -7,6 +7,7 @@ import {
   boolean,
   timestamp,
   smallint,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -40,6 +41,7 @@ export const splitPreferenceEnum = pgEnum("split_preference", [
   "upper_lower",
   "push_pull_legs",
   "bro_split",
+  "custom",
 ]);
 
 export const exerciseRuleTypeEnum = pgEnum("exercise_rule_type", [
@@ -187,6 +189,7 @@ export const exercises = pgTable("exercises", {
   ),
   name: text("name").notNull(),
   movementPatternId: uuid("movement_pattern_id").references(() => movementPatterns.id),
+  muscleGroupId: uuid("muscle_group_id").references(() => muscleGroups.id),
   exerciseDemoId: uuid("exercise_demo_id").references(() => exerciseDemos.id),
   defaultSets: smallint("default_sets").notNull().default(3),
   defaultReps: smallint("default_reps").notNull().default(10),
@@ -214,6 +217,26 @@ export const memberProfiles = pgTable("member_profiles", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
+
+/** A member's explicit day -> muscle group assignment for the "custom"
+ * split (e.g. "Monday = Legs, Wednesday = Chest") — only read by the
+ * recommendation engine when memberProfiles.splitPreference is "custom",
+ * where it fully replaces the daysPerWeek/offDays/rotation-based
+ * scheduling used by the other split styles. */
+export const memberDayFocus = pgTable(
+  "member_day_focus",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    dayIndex: smallint("day_index").notNull(), // 0=Mon .. 6=Sun
+    muscleGroupId: uuid("muscle_group_id")
+      .notNull()
+      .references(() => muscleGroups.id),
+  },
+  (table) => [uniqueIndex("member_day_focus_user_day_idx").on(table.userId, table.dayIndex)]
+);
 
 export const memberExerciseRules = pgTable("member_exercise_rules", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -324,6 +347,15 @@ export const usersRelations = relations(users, ({ one, many }) => ({
     references: [memberProfiles.userId],
   }),
   workoutPlans: many(workoutPlans),
+  dayFocus: many(memberDayFocus),
+}));
+
+export const memberDayFocusRelations = relations(memberDayFocus, ({ one }) => ({
+  user: one(users, { fields: [memberDayFocus.userId], references: [users.id] }),
+  muscleGroup: one(muscleGroups, {
+    fields: [memberDayFocus.muscleGroupId],
+    references: [muscleGroups.id],
+  }),
 }));
 
 export const equipmentTemplatesRelations = relations(
@@ -388,6 +420,10 @@ export const exercisesRelations = relations(exercises, ({ one }) => ({
   movementPattern: one(movementPatterns, {
     fields: [exercises.movementPatternId],
     references: [movementPatterns.id],
+  }),
+  muscleGroup: one(muscleGroups, {
+    fields: [exercises.muscleGroupId],
+    references: [muscleGroups.id],
   }),
   demo: one(exerciseDemos, {
     fields: [exercises.exerciseDemoId],
