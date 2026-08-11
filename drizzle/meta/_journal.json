@@ -8,6 +8,13 @@
       "when": 1786420868982,
       "tag": "0000_thin_black_widow",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1786427156869,
+      "tag": "0001_eminent_supernaut",
+      "breakpoints": true
     }
   ]
 }

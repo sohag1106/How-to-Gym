@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -49,6 +50,7 @@ export default function RootLayout({
       >
         <body className="min-h-full flex flex-col bg-background text-foreground overscroll-none">
           {children}
+          <Toaster position="top-center" />
         </body>
       </html>
     </ClerkProvider>

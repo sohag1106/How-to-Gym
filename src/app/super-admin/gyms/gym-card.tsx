@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Users, Mail, Phone } from "lucide-react";
+import { Users, Mail, Phone, Link2, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
-import { toggleGymActive, updateMemberLimit } from "./actions";
+import { toggleGymActive, updateMemberLimit, resendInvite } from "./actions";
 
 type Gym = {
   id: string;
@@ -16,12 +17,30 @@ type Gym = {
   memberLimit: number;
   active: boolean;
   memberCount: number;
+  invitationUrl: string | null;
 };
 
 export function GymCard({ gym }: { gym: Gym }) {
   const [active, setActive] = useState(gym.active);
   const [limit, setLimit] = useState(gym.memberLimit);
   const [isPending, startTransition] = useTransition();
+  const [isResending, startResendTransition] = useTransition();
+
+  function copyInviteLink() {
+    if (!gym.invitationUrl) return;
+    navigator.clipboard
+      .writeText(gym.invitationUrl)
+      .then(() => toast.success("Invite link copied"))
+      .catch(() => toast.error("Couldn't copy — try again"));
+  }
+
+  function resend() {
+    startResendTransition(async () => {
+      const res = await resendInvite(gym.id);
+      if (res?.error) toast.error(res.error);
+      else toast.success("New invite created");
+    });
+  }
 
   return (
     <div className="rounded-2xl border border-border bg-card p-5 flex flex-col gap-3">
@@ -54,6 +73,27 @@ export function GymCard({ gym }: { gym: Gym }) {
         <span className="flex items-center gap-1.5">
           <Phone className="size-3.5" /> {gym.ownerPhone}
         </span>
+      </div>
+
+      <div className="flex items-center gap-2 pt-1">
+        <button
+          type="button"
+          disabled={!gym.invitationUrl}
+          onClick={copyInviteLink}
+          className="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-border py-2 text-xs font-medium hover:bg-accent hover:text-accent-foreground disabled:opacity-40"
+        >
+          <Link2 className="size-3.5" />
+          Copy invite link
+        </button>
+        <button
+          type="button"
+          disabled={isResending}
+          onClick={resend}
+          className="flex items-center justify-center gap-1.5 rounded-xl border border-border py-2 px-3 text-xs font-medium hover:bg-accent hover:text-accent-foreground disabled:opacity-40"
+        >
+          <RefreshCw className={isResending ? "size-3.5 animate-spin" : "size-3.5"} />
+          Resend
+        </button>
       </div>
 
       <div className="flex items-center justify-between pt-2 border-t border-border">

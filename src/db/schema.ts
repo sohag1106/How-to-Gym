@@ -72,6 +72,8 @@ export const gyms = pgTable("gyms", {
   memberLimit: integer("member_limit").notNull().default(50),
   active: boolean("active").notNull().default(true),
   createdBySuperAdminId: uuid("created_by_super_admin_id"),
+  invitationId: text("invitation_id"),
+  invitationUrl: text("invitation_url"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

@@ -40,12 +40,16 @@ export async function createGym(
 
   try {
     const client = await clerkClient();
-    await client.invitations.createInvitation({
+    const invitation = await client.invitations.createInvitation({
       emailAddress: parsed.data.ownerEmail,
       publicMetadata: { role: "gym_owner", gymId: gym.id },
       redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/sign-up`,
       ignoreExisting: true,
     });
+    await db
+      .update(gyms)
+      .set({ invitationId: invitation.id, invitationUrl: invitation.url })
+      .where(eq(gyms.id, gym.id));
   } catch (err) {
     console.error("Failed to send Clerk invitation", err);
     revalidatePath("/super-admin/gyms");
@@ -56,7 +60,39 @@ export async function createGym(
   }
 
   revalidatePath("/super-admin/gyms");
-  return { success: `${gym.name} created — invite sent to ${gym.ownerEmail}.` };
+  return {
+    success: `${gym.name} created — invite sent to ${gym.ownerEmail}. If it doesn't land in their inbox, copy the invite link from the gym card instead.`,
+  };
+}
+
+export async function resendInvite(gymId: string) {
+  await requireRole("super_admin");
+
+  const [gym] = await db.select().from(gyms).where(eq(gyms.id, gymId));
+  if (!gym) return { error: "Gym not found" };
+
+  try {
+    const client = await clerkClient();
+    if (gym.invitationId) {
+      await client.invitations.revokeInvitation(gym.invitationId).catch(() => {});
+    }
+    const invitation = await client.invitations.createInvitation({
+      emailAddress: gym.ownerEmail,
+      publicMetadata: { role: "gym_owner", gymId: gym.id },
+      redirectUrl: `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/sign-up`,
+      ignoreExisting: true,
+    });
+    await db
+      .update(gyms)
+      .set({ invitationId: invitation.id, invitationUrl: invitation.url })
+      .where(eq(gyms.id, gymId));
+  } catch (err) {
+    console.error("Failed to resend Clerk invitation", err);
+    return { error: "Could not create a new invite. Check the Clerk dashboard." };
+  }
+
+  revalidatePath("/super-admin/gyms");
+  return { success: true };
 }
 
 export async function toggleGymActive(gymId: string, active: boolean) {
