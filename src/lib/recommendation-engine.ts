@@ -206,6 +206,21 @@ export async function generateWorkoutPlan(userId: string) {
   const blockedIds = new Set(rules.filter((r) => r.type === "blocked").map((r) => r.exerciseId));
   const hasAssignedRules = assignedIds.size > 0;
 
+  // The pattern-derived category is right for push/pull/legs, but wrong
+  // whenever the exercise's own muscle group is Core or Cardio — e.g. an
+  // ab exercise built on the cable_row pattern (Cable Woodchopper, Cable
+  // Pallof Press) or the pull_up pattern (Hanging Leg Raise) would
+  // otherwise be categorized "pull" and show up on Push/Pull/Legs' "Pull"
+  // day or Upper/Lower's "Upper Body" day instead of where it belongs.
+  const allMuscleGroups = await db.select().from(muscleGroups);
+  const coreGroupId = allMuscleGroups.find((g) => g.name === "Core")?.id;
+  const cardioGroupId = allMuscleGroups.find((g) => g.name === "Cardio")?.id;
+  function categoryFor(muscleGroupId: string, patternKey: string): Category {
+    if (muscleGroupId === coreGroupId) return "core";
+    if (muscleGroupId === cardioGroupId) return "cardio";
+    return PATTERN_CATEGORY[patternKey] ?? "core";
+  }
+
   const eligible: EligibleExercise[] = gymExercises
     .filter((e) => (hasAssignedRules ? assignedIds.has(e.id) : true))
     .filter((e) => !blockedIds.has(e.id))
@@ -215,7 +230,7 @@ export async function generateWorkoutPlan(userId: string) {
       equipmentId: e.equipmentId,
       muscleGroupId: e.muscleGroupId,
       patternKey: e.patternKey,
-      category: PATTERN_CATEGORY[e.patternKey] ?? "core",
+      category: categoryFor(e.muscleGroupId, e.patternKey),
       defaultSets: e.defaultSets,
       defaultReps: e.defaultReps,
       defaultRestSeconds: e.defaultRestSeconds,
@@ -251,7 +266,6 @@ export async function generateWorkoutPlan(userId: string) {
       });
     }
   } else if (profile.splitPreference === "bro_split") {
-    const allMuscleGroups = await db.select().from(muscleGroups);
     const idByName = new Map(allMuscleGroups.map((g) => [g.name, g.id]));
     const rotation = ["Chest", "Back", "Legs", "Shoulders", "Arms"]
       .map((name) => ({ name, id: idByName.get(name) }))
